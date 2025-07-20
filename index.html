@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>FEFC Sidescroller</title>
+        <style>
+            body {
+                margin: 0;
+                padding: 0;
+                font-family:
+                    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+                    sans-serif;
+                background-color: #1a1a1a;
+                color: #ffffff;
+                overflow: hidden;
+            }
+
+            #app {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            h1 {
+                margin: 0 0 10px 0;
+                font-size: 2.5em;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            }
+
+            p {
+                margin: 5px 0;
+                font-size: 1.1em;
+                text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+            }
+
+            canvas {
+                border: 3px solid #333;
+                border-radius: 8px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+                margin-top: 20px;
+                /* background-color: #87ceeb; */
+            }
+
+            .controls {
+                margin-top: 15px;
+                text-align: center;
+                font-size: 0.9em;
+                opacity: 0.8;
+            }
+
+            .controls p {
+                margin: 2px 0;
+                font-size: 0.9em;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="app">
+            <h1>Walkin dem streets</h1>
+            <div class="controls">
+                <p>Use WASD or Arrow Keys to move</p>
+            </div>
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        <script type="module" src="/src/main.ts"></script>
+    </body>
+</html>

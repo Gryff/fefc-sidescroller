@@ -1,0 +1,153 @@
+<svg width="96" height="128" viewBox="0 0 96 128" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background (transparent) -->
+
+  <!-- Saddlebag (back layer) -->
+  <rect x="60" y="45" width="18" height="25" fill="#8B4513"/>
+  <rect x="61" y="46" width="16" height="23" fill="#A0522D"/>
+  <rect x="62" y="47" width="14" height="21" fill="#CD853F"/>
+
+  <!-- Saddlebag buckles and details -->
+  <rect x="65" y="50" width="8" height="3" fill="#654321"/>
+  <rect x="67" y="51" width="4" height="1" fill="#FFD700"/>
+  <rect x="65" y="58" width="8" height="2" fill="#654321"/>
+  <rect x="74" y="52" width="2" height="6" fill="#654321"/>
+
+  <!-- Saddlebag flap -->
+  <rect x="63" y="44" width="12" height="5" fill="#654321"/>
+  <rect x="64" y="45" width="10" height="3" fill="#8B4513"/>
+
+  <!-- Body (shirt) -->
+  <rect x="32" y="40" width="32" height="35" fill="#4169E1"/>
+  <rect x="33" y="41" width="30" height="33" fill="#6495ED"/>
+  <rect x="34" y="42" width="28" height="31" fill="#87CEEB"/>
+
+  <!-- Shirt collar -->
+  <rect x="40" y="40" width="16" height="6" fill="#FFFFFF"/>
+  <rect x="41" y="41" width="14" height="4" fill="#F5F5F5"/>
+  <rect x="47" y="42" width="2" height="8" fill="#DCDCDC"/>
+
+  <!-- Shirt buttons -->
+  <rect x="47" y="46" width="2" height="2" fill="#C0C0C0"/>
+  <rect x="47" y="52" width="2" height="2" fill="#C0C0C0"/>
+  <rect x="47" y="58" width="2" height="2" fill="#C0C0C0"/>
+
+  <!-- Arms -->
+  <rect x="20" y="44" width="14" height="24" fill="#FFDBAC"/>
+  <rect x="62" y="44" width="14" height="24" fill="#FFDBAC"/>
+
+  <!-- Shirt sleeves -->
+  <rect x="22" y="42" width="12" height="8" fill="#4169E1"/>
+  <rect x="23" y="43" width="10" height="6" fill="#6495ED"/>
+  <rect x="62" y="42" width="12" height="8" fill="#4169E1"/>
+  <rect x="63" y="43" width="10" height="6" fill="#6495ED"/>
+
+  <!-- Hands -->
+  <rect x="20" y="66" width="8" height="8" fill="#FFDBAC"/>
+  <rect x="68" y="66" width="8" height="8" fill="#FFDBAC"/>
+
+  <!-- Fingers -->
+  <rect x="18" y="68" width="2" height="4" fill="#FFDBAC"/>
+  <rect x="28" y="68" width="2" height="4" fill="#FFDBAC"/>
+  <rect x="76" y="68" width="2" height="4" fill="#FFDBAC"/>
+  <rect x="66" y="68" width="2" height="4" fill="#FFDBAC"/>
+
+  <!-- Pants -->
+  <rect x="30" y="75" width="36" height="38" fill="#2F4F4F"/>
+  <rect x="31" y="76" width="34" height="36" fill="#708090"/>
+
+  <!-- Belt -->
+  <rect x="30" y="75" width="36" height="4" fill="#654321"/>
+  <rect x="45" y="75" width="6" height="4" fill="#FFD700"/>
+  <rect x="46" y="76" width="4" height="2" fill="#FFA500"/>
+
+  <!-- Legs (pants continuation) -->
+  <rect x="32" y="113" width="14" height="15" fill="#2F4F4F"/>
+  <rect x="50" y="113" width="14" height="15" fill="#2F4F4F"/>
+  <rect x="33" y="114" width="12" height="13" fill="#708090"/>
+  <rect x="51" y="114" width="12" height="13" fill="#708090"/>
+
+  <!-- Shoes -->
+  <rect x="30" y="120" width="18" height="8" fill="#000000"/>
+  <rect x="48" y="120" width="18" height="8" fill="#000000"/>
+  <rect x="31" y="121" width="16" height="6" fill="#333333"/>
+  <rect x="49" y="121" width="16" height="6" fill="#333333"/>
+
+  <!-- Shoe laces -->
+  <rect x="35" y="122" width="8" height="1" fill="#FFFFFF"/>
+  <rect x="53" y="122" width="8" height="1" fill="#FFFFFF"/>
+  <rect x="37" y="124" width="4" height="1" fill="#FFFFFF"/>
+  <rect x="55" y="124" width="4" height="1" fill="#FFFFFF"/>
+
+  <!-- Head -->
+  <rect x="35" y="8" width="26" height="32" fill="#FFDBAC"/>
+  <rect x="36" y="9" width="24" height="30" fill="#FFE4C4"/>
+
+  <!-- Neck -->
+  <rect x="42" y="38" width="12" height="6" fill="#FFDBAC"/>
+  <rect x="43" y="39" width="10" height="4" fill="#FFE4C4"/>
+
+  <!-- Hair -->
+  <rect x="32" y="6" width="32" height="12" fill="#D2B48C"/>
+  <rect x="34" y="4" width="28" height="8" fill="#DEB887"/>
+  <rect x="36" y="2" width="24" height="6" fill="#F5DEB3"/>
+  <rect x="30" y="8" width="6" height="16" fill="#D2B48C"/>
+  <rect x="60" y="8" width="6" height="16" fill="#D2B48C"/>
+  <rect x="32" y="18" width="4" height="8" fill="#D2B48C"/>
+  <rect x="60" y="18" width="4" height="8" fill="#D2B48C"/>
+
+  <!-- Hair texture/highlights -->
+  <rect x="38" y="6" width="2" height="4" fill="#F5DEB3"/>
+  <rect x="44" y="4" width="2" height="6" fill="#F5DEB3"/>
+  <rect x="52" y="6" width="2" height="4" fill="#F5DEB3"/>
+
+  <!-- Glasses frame -->
+  <rect x="36" y="16" width="12" height="10" fill="none" stroke="#000000" stroke-width="1"/>
+  <rect x="48" y="16" width="12" height="10" fill="none" stroke="#000000" stroke-width="1"/>
+  <rect x="47" y="20" width="2" height="2" fill="#000000"/>
+
+  <!-- Glasses bridge and arms -->
+  <rect x="34" y="20" width="4" height="1" fill="#000000"/>
+  <rect x="58" y="20" width="6" height="1" fill="#000000"/>
+
+  <!-- Eyes behind glasses -->
+  <rect x="40" y="20" width="4" height="3" fill="#FFFFFF"/>
+  <rect x="52" y="20" width="4" height="3" fill="#FFFFFF"/>
+  <rect x="41" y="21" width="2" height="2" fill="#4169E1"/>
+  <rect x="53" y="21" width="2" height="2" fill="#4169E1"/>
+  <rect x="41" y="21" width="1" height="1" fill="#000000"/>
+  <rect x="53" y="21" width="1" height="1" fill="#000000"/>
+
+  <!-- Eyebrows -->
+  <rect x="38" y="18" width="6" height="2" fill="#D2B48C"/>
+  <rect x="52" y="18" width="6" height="2" fill="#D2B48C"/>
+
+  <!-- Nose -->
+  <rect x="46" y="24" width="4" height="4" fill="#FFB6C1"/>
+  <rect x="47" y="25" width="2" height="2" fill="#FFC0CB"/>
+
+  <!-- Mouth -->
+  <rect x="44" y="30" width="8" height="3" fill="#000000"/>
+  <rect x="45" y="31" width="6" height="1" fill="#8B0000"/>
+
+  <!-- Saddlebag strap -->
+  <rect x="48" y="42" width="3" height="30" fill="#654321"/>
+  <rect x="49" y="43" width="1" height="28" fill="#8B4513"/>
+  <rect x="45" y="45" width="6" height="3" fill="#654321"/>
+
+  <!-- Laptop visible in bag -->
+  <rect x="64" y="50" width="10" height="8" fill="#C0C0C0"/>
+  <rect x="65" y="51" width="8" height="6" fill="#000000"/>
+  <rect x="65" y="51" width="8" height="2" fill="#1E90FF"/>
+  <rect x="66" y="53" width="6" height="1" fill="#32CD32"/>
+
+  <!-- Smartphone in pocket -->
+  <rect x="52" y="78" width="4" height="8" fill="#000000"/>
+  <rect x="53" y="79" width="2" height="6" fill="#4169E1"/>
+
+  <!-- ID badge -->
+  <rect x="38" y="48" width="6" height="8" fill="#FFFFFF"/>
+  <rect x="39" y="49" width="4" height="6" fill="#F0F8FF"/>
+  <rect x="39" y="50" width="4" height="1" fill="#000000"/>
+  <rect x="39" y="52" width="4" height="1" fill="#808080"/>
+  <rect x="39" y="54" width="4" height="1" fill="#808080"/>
+</svg>
