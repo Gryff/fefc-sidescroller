@@ -6,11 +6,9 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
-    "deploy": "@fastly/compute-js-static-publish --root-dir=./dist --service-id=PyrJxmYtq8w5C6WOO3LS13"
+    "preview": "vite preview"
   },
   "devDependencies": {
-    "@fastly/compute-js-static-publish": "^7.0.1",
     "typescript": "~5.8.3",
     "vite": "^7.0.4"
   }
