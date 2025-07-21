@@ -33,9 +33,12 @@ let playerIsOnGround = true;
 const backgroundImage = new Image();
 backgroundImage.src = "/background.png";
 
-// Player sprite
+// Player sprites
 const playerSprite = new Image();
 playerSprite.src = "/sprites/tris.png";
+const playerSpriteRight = new Image();
+playerSpriteRight.src = "/sprites/tris-right.png";
+let facingRight = false;
 
 // Player position
 let playerX = 0; // Will be set to center in init()
@@ -66,9 +69,11 @@ function update(): void {
   // Handle player movement
   if (keys["ArrowLeft"] || keys["KeyA"]) {
     playerX -= playerSpeed;
+    facingRight = false;
   }
   if (keys["ArrowRight"] || keys["KeyD"]) {
     playerX += playerSpeed;
+    facingRight = true;
   }
 
   // Handle jumping
@@ -142,13 +147,16 @@ function render(): void {
   }
 
   // Draw player sprite if loaded
-  if (playerSprite.complete) {
+  if (playerSprite.complete && playerSpriteRight.complete) {
     // Draw sprite centered on player position
     const spriteWidth = 96; // Adjust size as needed
     const spriteHeight = 128; // Adjust size as needed
 
+    // Select the appropriate sprite based on direction
+    const currentSprite = facingRight ? playerSpriteRight : playerSprite;
+
     ctx.drawImage(
-      playerSprite,
+      currentSprite,
       playerX - spriteWidth / 2,
       playerY - spriteHeight / 2,
       spriteWidth,
@@ -170,7 +178,7 @@ function gameLoop(): void {
 
 // Track loaded assets
 let assetsLoaded = 0;
-const totalAssets = 2;
+const totalAssets = 3; // Added a new sprite
 
 function checkAssetsLoaded(): void {
   assetsLoaded++;
@@ -192,6 +200,11 @@ playerSprite.onload = () => {
   checkAssetsLoaded();
 };
 
+playerSpriteRight.onload = () => {
+  console.log("Player right-facing sprite loaded");
+  checkAssetsLoaded();
+};
+
 // Handle image load errors
 backgroundImage.onerror = () => {
   console.error("Failed to load background image");
@@ -200,6 +213,11 @@ backgroundImage.onerror = () => {
 
 playerSprite.onerror = () => {
   console.error("Failed to load player sprite");
+  checkAssetsLoaded();
+};
+
+playerSpriteRight.onerror = () => {
+  console.error("Failed to load player right-facing sprite");
   checkAssetsLoaded();
 };
 
