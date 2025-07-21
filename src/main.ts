@@ -36,9 +36,12 @@ backgroundImage.src = "/background.png";
 // Player sprites
 const playerSprite = new Image();
 playerSprite.src = "/sprites/tris.png";
+const playerSpriteLeft = new Image();
+playerSpriteLeft.src = "/sprites/tris-left.png";
 const playerSpriteRight = new Image();
 playerSpriteRight.src = "/sprites/tris-right.png";
 let facingRight = false;
+let isMoving = false;
 
 // Player position
 let playerX = 0; // Will be set to center in init()
@@ -66,14 +69,19 @@ function update(): void {
   // Store previous player position for scrolling logic
   const prevPlayerX = playerX;
 
+  // Reset movement flag
+  isMoving = false;
+
   // Handle player movement
   if (keys["ArrowLeft"] || keys["KeyA"]) {
     playerX -= playerSpeed;
     facingRight = false;
+    isMoving = true;
   }
   if (keys["ArrowRight"] || keys["KeyD"]) {
     playerX += playerSpeed;
     facingRight = true;
+    isMoving = true;
   }
 
   // Handle jumping
@@ -147,13 +155,20 @@ function render(): void {
   }
 
   // Draw player sprite if loaded
-  if (playerSprite.complete && playerSpriteRight.complete) {
+  if (
+    playerSprite.complete &&
+    playerSpriteLeft.complete &&
+    playerSpriteRight.complete
+  ) {
     // Draw sprite centered on player position
     const spriteWidth = 96; // Adjust size as needed
     const spriteHeight = 128; // Adjust size as needed
 
-    // Select the appropriate sprite based on direction
-    const currentSprite = facingRight ? playerSpriteRight : playerSprite;
+    // Select the appropriate sprite based on movement state and direction
+    let currentSprite = playerSprite; // Default sprite when not moving
+    if (isMoving) {
+      currentSprite = facingRight ? playerSpriteRight : playerSpriteLeft;
+    }
 
     ctx.drawImage(
       currentSprite,
@@ -178,7 +193,7 @@ function gameLoop(): void {
 
 // Track loaded assets
 let assetsLoaded = 0;
-const totalAssets = 3; // Added a new sprite
+const totalAssets = 4; // Background + 3 player sprites
 
 function checkAssetsLoaded(): void {
   assetsLoaded++;
@@ -196,7 +211,12 @@ backgroundImage.onload = () => {
 };
 
 playerSprite.onload = () => {
-  console.log("Player sprite loaded");
+  console.log("Player default sprite loaded");
+  checkAssetsLoaded();
+};
+
+playerSpriteLeft.onload = () => {
+  console.log("Player left-facing sprite loaded");
   checkAssetsLoaded();
 };
 
@@ -212,7 +232,12 @@ backgroundImage.onerror = () => {
 };
 
 playerSprite.onerror = () => {
-  console.error("Failed to load player sprite");
+  console.error("Failed to load player default sprite");
+  checkAssetsLoaded();
+};
+
+playerSpriteLeft.onerror = () => {
+  console.error("Failed to load player left-facing sprite");
   checkAssetsLoaded();
 };
 
