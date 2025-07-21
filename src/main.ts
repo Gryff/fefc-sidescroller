@@ -21,8 +21,13 @@ let gameRunning = true;
 // Input state
 const keys: { [key: string]: boolean } = {};
 
-// Player movement speed
+// Player movement and physics
 const playerSpeed = 3;
+const gravity = 0.5;
+const jumpStrength = -12;
+let playerVelocityY = 0;
+const groundLevel = () => canvas.height - 200; // Ground level for the player
+let playerIsOnGround = true;
 
 // Background image
 const backgroundImage = new Image();
@@ -46,7 +51,9 @@ const maxBackgroundOffset = () => (backgroundImage.width * 2) / 3; // Stop at ri
 function init(): void {
   // Position player at center horizontally, towards bottom vertically
   playerX = canvas.width / 2;
-  playerY = canvas.height - 150; // 150px from bottom
+  playerY = groundLevel(); // Place player on ground
+  playerVelocityY = 0;
+  playerIsOnGround = true;
 
   console.log("Game initialized");
 }
@@ -63,11 +70,22 @@ function update(): void {
   if (keys["ArrowRight"] || keys["KeyD"]) {
     playerX += playerSpeed;
   }
-  if (keys["ArrowUp"] || keys["KeyW"]) {
-    playerY -= playerSpeed;
+
+  // Handle jumping
+  if ((keys["ArrowUp"] || keys["KeyW"]) && playerIsOnGround) {
+    playerVelocityY = jumpStrength;
+    playerIsOnGround = false;
   }
-  if (keys["ArrowDown"] || keys["KeyS"]) {
-    playerY += playerSpeed;
+
+  // Apply gravity
+  playerVelocityY += gravity;
+  playerY += playerVelocityY;
+
+  // Check for ground collision
+  if (playerY >= groundLevel()) {
+    playerY = groundLevel();
+    playerVelocityY = 0;
+    playerIsOnGround = true;
   }
 
   // Handle background scrolling when moving right
@@ -96,9 +114,10 @@ function update(): void {
     }
   }
 
-  // Keep player within canvas bounds
+  // Keep player within horizontal canvas bounds
   playerX = Math.max(32, Math.min(canvas.width - 32, playerX));
-  playerY = Math.max(32, Math.min(canvas.height - 32, playerY));
+
+  // Vertical bounds are handled by gravity and ground collision
 }
 
 // Render the game
