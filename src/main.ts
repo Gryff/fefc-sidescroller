@@ -33,6 +33,14 @@ let playerIsOnGround = true;
 const backgroundImage = new Image();
 backgroundImage.src = "/background.png";
 
+// Joystick image for mobile/touch devices
+const joystickImage = new Image();
+joystickImage.src = "/joystick.png";
+let joystickLoaded = false;
+joystickImage.onload = () => {
+  joystickLoaded = true;
+};
+
 // Player sprites
 const playerSprite = new Image();
 playerSprite.src = "/sprites/tris.png";
@@ -42,6 +50,11 @@ const playerSpriteRight = new Image();
 playerSpriteRight.src = "/sprites/tris-right.png";
 let facingRight = false;
 let isMoving = false;
+
+// Detect touch capability
+const isTouchDevice =
+  "ontouchstart" in window ||
+  (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
 
 // Player position
 let playerX = 0; // Will be set to center in init()
@@ -177,6 +190,21 @@ function render(): void {
       spriteWidth,
       spriteHeight,
     );
+  }
+
+  // Draw joystick for touch devices
+  if (isTouchDevice && joystickLoaded) {
+    const joystickSize = 128; // Size of the joystick image
+    const margin = 32; // Margin from the edges
+    ctx.globalAlpha = 0.8; // Slight transparency for UI
+    ctx.drawImage(
+      joystickImage,
+      margin,
+      canvas.height - joystickSize - margin,
+      joystickSize,
+      joystickSize,
+    );
+    ctx.globalAlpha = 1.0; // Reset alpha
   }
 
   // Other rendering will go here
