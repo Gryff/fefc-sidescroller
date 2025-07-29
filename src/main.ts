@@ -41,6 +41,15 @@ joystickImage.onload = () => {
   joystickLoaded = true;
 };
 
+// Joystick touch state
+let joystickTouchId: number | null = null;
+let joystickActive = false;
+let joystickDir: { left: boolean; right: boolean; up: boolean } = {
+  left: false,
+  right: false,
+  up: false,
+};
+
 // Player sprites
 const playerSprite = new Image();
 playerSprite.src = "/sprites/tris.png";
@@ -79,6 +88,13 @@ function init(): void {
 
 // Update game logic
 function update(): void {
+  // Handle joystick input (simulate key presses)
+  if (isTouchDevice && joystickActive) {
+    keys["ArrowLeft"] = joystickDir.left;
+    keys["ArrowRight"] = joystickDir.right;
+    keys["ArrowUp"] = joystickDir.up;
+  }
+
   // Store previous player position for scrolling logic
   const prevPlayerX = playerX;
 
@@ -282,3 +298,63 @@ window.addEventListener("keydown", (event) => {
 window.addEventListener("keyup", (event) => {
   keys[event.code] = false;
 });
+
+// Joystick touch controls for mobile
+if (isTouchDevice) {
+  const joystickSize = 128;
+  const margin = 32;
+
+  canvas.addEventListener("touchstart", (event) => {
+    for (const touch of Array.from(event.touches)) {
+      const x = touch.clientX;
+      const y = touch.clientY;
+      // Check if touch is within joystick area
+      if (
+        x >= margin &&
+        x <= margin + joystickSize &&
+        y >= canvas.height - joystickSize - margin &&
+        y <= canvas.height - margin
+      ) {
+        joystickTouchId = touch.identifier;
+        joystickActive = true;
+        joystickDir = { left: false, right: false, up: false };
+        event.preventDefault();
+        break;
+      }
+    }
+  });
+
+  canvas.addEventListener("touchmove", (event) => {
+    if (!joystickActive || joystickTouchId === null) return;
+    for (const touch of Array.from(event.touches)) {
+      if (touch.identifier === joystickTouchId) {
+        const x = touch.clientX;
+        const y = touch.clientY;
+        const centerX = margin + joystickSize / 2;
+        const centerY = canvas.height - margin - joystickSize / 2;
+        const dx = x - centerX;
+        const dy = y - centerY;
+        // Simple direction detection
+        joystickDir.left = dx < -joystickSize / 4;
+        joystickDir.right = dx > joystickSize / 4;
+        joystickDir.up = dy < -joystickSize / 4;
+        event.preventDefault();
+        break;
+      }
+    }
+  });
+
+  canvas.addEventListener("touchend", (event) => {
+    if (!joystickActive) return;
+    // If the tracked touch ends, reset joystick
+    for (const touch of Array.from(event.changedTouches)) {
+      if (touch.identifier === joystickTouchId) {
+        joystickTouchId = null;
+        joystickActive = false;
+        joystickDir = { left: false, right: false, up: false };
+        event.preventDefault();
+        break;
+      }
+    }
+  });
+}
