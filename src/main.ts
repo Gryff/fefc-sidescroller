@@ -42,7 +42,12 @@ const playerEntityId = createEntity();
 const groundLevel = () => canvas.height - 200;
 
 async function loadComponents() {
-  sprite[playerEntityId] = await createSprite("/sprites/tris.png");
+  sprite[playerEntityId] = await createSprite(
+    "/sprites/tris-sheet.png",
+    96, // frame width
+    128, // frame height
+    3, // number of frames
+  );
   input[playerEntityId] = { left: false, right: false, up: false };
   position[playerEntityId] = {
     x: canvas.width / 2,
@@ -81,13 +86,7 @@ loadComponents().then(() => {
     up: false,
   };
 
-  // Player sprites
-  const playerSprite = new Image();
-  playerSprite.src = "/sprites/tris.png";
-  const playerSpriteLeft = new Image();
-  playerSpriteLeft.src = "/sprites/tris-left.png";
-  const playerSpriteRight = new Image();
-  playerSpriteRight.src = "/sprites/tris-right.png";
+  // Player sprite sheet is loaded via createSprite
   let facingRight = false;
   let isMoving = false;
 
@@ -135,6 +134,13 @@ loadComponents().then(() => {
       position[playerEntityId].x += playerSpeed;
       facingRight = true;
       isMoving = true;
+    }
+
+    // Set sprite frame based on movement state and direction
+    if (isMoving) {
+      sprite[playerEntityId].currentFrame = facingRight ? 2 : 1;
+    } else {
+      sprite[playerEntityId].currentFrame = 0;
     }
 
     // Handle jumping
@@ -213,28 +219,22 @@ loadComponents().then(() => {
       );
     }
 
-    // Draw player sprite if loaded
-    if (
-      playerSprite.complete &&
-      playerSpriteLeft.complete &&
-      playerSpriteRight.complete
-    ) {
-      // Draw sprite centered on player position
-      const spriteWidth = 96; // Adjust size as needed
-      const spriteHeight = 128; // Adjust size as needed
-
-      // Select the appropriate sprite based on movement state and direction
-      let currentSprite = playerSprite; // Default sprite when not moving
-      if (isMoving) {
-        currentSprite = facingRight ? playerSpriteRight : playerSpriteLeft;
-      }
-
+    // Draw player sprite from sprite sheet if loaded
+    const playerSpriteData = sprite[playerEntityId];
+    if (playerSpriteData && playerSpriteData.image.complete) {
+      const frame = playerSpriteData.currentFrame;
+      const sx = frame * playerSpriteData.width;
+      const sy = 0;
       ctx.drawImage(
-        currentSprite,
-        position[playerEntityId].x - spriteWidth / 2,
-        position[playerEntityId].y - spriteHeight / 2,
-        spriteWidth,
-        spriteHeight,
+        playerSpriteData.image,
+        sx,
+        sy,
+        playerSpriteData.width,
+        playerSpriteData.height, // source rect
+        position[playerEntityId].x - playerSpriteData.width / 2,
+        position[playerEntityId].y - playerSpriteData.height / 2,
+        playerSpriteData.width,
+        playerSpriteData.height,
       );
     }
 
@@ -267,7 +267,7 @@ loadComponents().then(() => {
 
   // Track loaded assets
   let assetsLoaded = 0;
-  const totalAssets = 4; // Background + 3 player sprites
+  const totalAssets = 1; // Only background image needs to be loaded here
 
   function checkAssetsLoaded(): void {
     assetsLoaded++;
@@ -278,45 +278,15 @@ loadComponents().then(() => {
     }
   }
 
-  // Start the game when all assets are loaded
+  // Start the game when background image is loaded
   backgroundImage.onload = () => {
     console.log("Background image loaded");
-    checkAssetsLoaded();
-  };
-
-  playerSprite.onload = () => {
-    console.log("Player default sprite loaded");
-    checkAssetsLoaded();
-  };
-
-  playerSpriteLeft.onload = () => {
-    console.log("Player left-facing sprite loaded");
-    checkAssetsLoaded();
-  };
-
-  playerSpriteRight.onload = () => {
-    console.log("Player right-facing sprite loaded");
     checkAssetsLoaded();
   };
 
   // Handle image load errors
   backgroundImage.onerror = () => {
     console.error("Failed to load background image");
-    checkAssetsLoaded();
-  };
-
-  playerSprite.onerror = () => {
-    console.error("Failed to load player default sprite");
-    checkAssetsLoaded();
-  };
-
-  playerSpriteLeft.onerror = () => {
-    console.error("Failed to load player left-facing sprite");
-    checkAssetsLoaded();
-  };
-
-  playerSpriteRight.onerror = () => {
-    console.error("Failed to load player right-facing sprite");
     checkAssetsLoaded();
   };
 

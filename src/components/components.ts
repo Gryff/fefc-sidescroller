@@ -4,8 +4,10 @@ export type Sprite = Record<
   EntityId,
   {
     image: HTMLImageElement;
-    width: number;
-    height: number;
+    width: number; // width of a single frame
+    height: number; // height of a single frame
+    frameCount: number; // total frames in the sheet
+    currentFrame: number; // which frame to render
   }
 >;
 
@@ -34,14 +36,21 @@ export type Input = Record<
   }
 >;
 
-export async function createSprite(imageSrc: string): Promise<Sprite[number]> {
+export async function createSprite(
+  imageSrc: string,
+  frameWidth: number,
+  frameHeight: number,
+  frameCount: number,
+): Promise<Sprite[number]> {
   const image = new Image();
   image.src = imageSrc;
   await image.decode();
 
   return {
     image,
-    width: image.width,
-    height: image.height,
+    width: frameWidth,
+    height: frameHeight,
+    frameCount,
+    currentFrame: 0,
   };
 }
