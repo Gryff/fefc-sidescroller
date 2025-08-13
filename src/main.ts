@@ -1,3 +1,12 @@
+import {
+  createSprite,
+  type EntityId,
+  type Input,
+  type Position,
+  type Sprite,
+  type Velocity,
+} from "./components/components";
+
 // Game Canvas and Context
 const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
 const ctx = canvas.getContext("2d") as CanvasRenderingContext2D;
@@ -17,344 +26,382 @@ window.addEventListener("resize", resizeCanvas);
 
 // Game state
 let gameRunning = true;
+let entityIdCounter: EntityId = 0;
 
-// Input state
-const keys: { [key: string]: boolean } = {};
-
-// Player movement and physics
-const playerSpeed = 3;
-const gravity = 0.5;
-const jumpStrength = -12;
-let playerVelocityY = 0;
-const groundLevel = () => canvas.height - 200; // Ground level for the player
-let playerIsOnGround = true;
-
-// Background image
-const backgroundImage = new Image();
-backgroundImage.src = "/background.png";
-
-// Joystick image for mobile/touch devices
-const joystickImage = new Image();
-joystickImage.src = "/joystick.png";
-let joystickLoaded = false;
-joystickImage.onload = () => {
-  joystickLoaded = true;
-};
-
-// Joystick touch state
-let joystickTouchId: number | null = null;
-let joystickActive = false;
-let joystickDir: { left: boolean; right: boolean; up: boolean } = {
-  left: false,
-  right: false,
-  up: false,
-};
-
-// Player sprites
-const playerSprite = new Image();
-playerSprite.src = "/sprites/tris.png";
-const playerSpriteLeft = new Image();
-playerSpriteLeft.src = "/sprites/tris-left.png";
-const playerSpriteRight = new Image();
-playerSpriteRight.src = "/sprites/tris-right.png";
-let facingRight = false;
-let isMoving = false;
-
-// Detect touch capability
-const isTouchDevice =
-  "ontouchstart" in window ||
-  (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
-
-// Player position
-let playerX = 0; // Will be set to center in init()
-let playerY = 0; // Will be set to bottom in init()
-
-// Background scrolling
-let backgroundOffsetX = 0;
-const scrollTriggerX = () => canvas.width * (2 / 3); // 2/3 across screen
-const scrollTriggerLeftX = () => canvas.width * (1 / 3); // 1/3 across screen for left scrolling
-const maxBackgroundOffset = () => (backgroundImage.width * 2) / 3; // Stop at rightmost end
-
-// Game initialization
-function init(): void {
-  // Position player at center horizontally, towards bottom vertically
-  playerX = canvas.width / 2;
-  playerY = groundLevel(); // Place player on ground
-  playerVelocityY = 0;
-  playerIsOnGround = true;
-
-  console.log("Game initialized");
+function createEntity(): EntityId {
+  return entityIdCounter++;
 }
 
-// Update game logic
-function update(): void {
-  // Handle joystick input (simulate key presses)
-  if (isTouchDevice && joystickActive) {
-    keys["ArrowLeft"] = joystickDir.left;
-    keys["ArrowRight"] = joystickDir.right;
-    keys["ArrowUp"] = joystickDir.up;
-  }
+const sprite: Sprite = {};
+const position: Position = {};
+const velocity: Velocity = {};
+const input: Input = {};
 
-  // Store previous player position for scrolling logic
-  const prevPlayerX = playerX;
+const playerEntityId = createEntity();
 
-  // Reset movement flag
-  isMoving = false;
+const groundLevel = () => canvas.height - 200;
 
-  // Handle player movement
-  if (keys["ArrowLeft"] || keys["KeyA"]) {
-    playerX -= playerSpeed;
-    facingRight = false;
-    isMoving = true;
-  }
-  if (keys["ArrowRight"] || keys["KeyD"]) {
-    playerX += playerSpeed;
-    facingRight = true;
-    isMoving = true;
-  }
+async function loadComponents() {
+  sprite[playerEntityId] = await createSprite("/sprites/tris.png");
+  input[playerEntityId] = { left: false, right: false, up: false };
+  position[playerEntityId] = {
+    x: canvas.width / 2,
+    y: groundLevel(),
+  };
+  // TODO: continue using these
+  velocity[playerEntityId] = { x: 0, y: 0 };
+}
 
-  // Handle jumping
-  if ((keys["ArrowUp"] || keys["KeyW"]) && playerIsOnGround) {
-    playerVelocityY = jumpStrength;
-    playerIsOnGround = false;
-  }
+loadComponents().then(() => {
+  // Player movement and physics
+  const playerSpeed = 3;
+  const gravity = 0.5;
+  const jumpStrength = -12;
+  let playerVelocityY = 0;
+  let playerIsOnGround = true;
 
-  // Apply gravity
-  playerVelocityY += gravity;
-  playerY += playerVelocityY;
+  // Background image
+  const backgroundImage = new Image();
+  backgroundImage.src = "/background.png";
 
-  // Check for ground collision
-  if (playerY >= groundLevel()) {
-    playerY = groundLevel();
+  // Joystick image for mobile/touch devices
+  const joystickImage = new Image();
+  joystickImage.src = "/joystick.png";
+  let joystickLoaded = false;
+  joystickImage.onload = () => {
+    joystickLoaded = true;
+  };
+
+  // Joystick touch state
+  let joystickTouchId: number | null = null;
+  let joystickActive = false;
+  let joystickDir: { left: boolean; right: boolean; up: boolean } = {
+    left: false,
+    right: false,
+    up: false,
+  };
+
+  // Player sprites
+  const playerSprite = new Image();
+  playerSprite.src = "/sprites/tris.png";
+  const playerSpriteLeft = new Image();
+  playerSpriteLeft.src = "/sprites/tris-left.png";
+  const playerSpriteRight = new Image();
+  playerSpriteRight.src = "/sprites/tris-right.png";
+  let facingRight = false;
+  let isMoving = false;
+
+  // Detect touch capability
+  const isTouchDevice =
+    "ontouchstart" in window ||
+    (navigator.maxTouchPoints && navigator.maxTouchPoints > 0);
+
+  // Background scrolling
+  let backgroundOffsetX = 0;
+  const scrollTriggerX = () => canvas.width * (2 / 3); // 2/3 across screen
+  const scrollTriggerLeftX = () => canvas.width * (1 / 3); // 1/3 across screen for left scrolling
+  const maxBackgroundOffset = () => (backgroundImage.width * 2) / 3; // Stop at rightmost end
+
+  // Game initialization
+  function init(): void {
     playerVelocityY = 0;
     playerIsOnGround = true;
+
+    console.log("Game initialized");
   }
 
-  // Handle background scrolling when moving right
-  if (keys["ArrowRight"] || keys["KeyD"]) {
-    if (
-      playerX >= scrollTriggerX() &&
-      backgroundOffsetX < maxBackgroundOffset()
-    ) {
-      // Player is at trigger point and background can still scroll
-      const scrollAmount = playerX - prevPlayerX;
-      backgroundOffsetX = Math.min(
-        maxBackgroundOffset(),
-        backgroundOffsetX + scrollAmount,
-      );
-      playerX = scrollTriggerX(); // Keep player at trigger position
-    }
-  }
-
-  // Handle background scrolling when moving left
-  if (keys["ArrowLeft"] || keys["KeyA"]) {
-    if (playerX <= scrollTriggerLeftX() && backgroundOffsetX > 0) {
-      // Player is at left trigger point and background can scroll back
-      const scrollAmount = prevPlayerX - playerX;
-      backgroundOffsetX = Math.max(0, backgroundOffsetX - scrollAmount);
-      playerX = scrollTriggerLeftX(); // Keep player at left trigger position
-    }
-  }
-
-  // Keep player within horizontal canvas bounds
-  playerX = Math.max(32, Math.min(canvas.width - 32, playerX));
-
-  // Vertical bounds are handled by gravity and ground collision
-}
-
-// Render the game
-function render(): void {
-  // Clear the canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // Draw background if loaded with scrolling offset
-  if (backgroundImage.complete) {
-    const sourceWidth = backgroundImage.width / 3;
-    ctx.drawImage(
-      backgroundImage,
-      backgroundOffsetX,
-      0,
-      sourceWidth,
-      backgroundImage.height, // source: with offset
-      0,
-      0,
-      canvas.width,
-      canvas.height, // destination: fill canvas
-    );
-  }
-
-  // Draw player sprite if loaded
-  if (
-    playerSprite.complete &&
-    playerSpriteLeft.complete &&
-    playerSpriteRight.complete
-  ) {
-    // Draw sprite centered on player position
-    const spriteWidth = 96; // Adjust size as needed
-    const spriteHeight = 128; // Adjust size as needed
-
-    // Select the appropriate sprite based on movement state and direction
-    let currentSprite = playerSprite; // Default sprite when not moving
-    if (isMoving) {
-      currentSprite = facingRight ? playerSpriteRight : playerSpriteLeft;
+  // Update game logic
+  function update(): void {
+    // Handle joystick input (simulate key presses)
+    if (isTouchDevice && joystickActive) {
+      input[playerEntityId].left = joystickDir.left;
+      input[playerEntityId].right = joystickDir.right;
+      input[playerEntityId].up = joystickDir.up;
     }
 
-    ctx.drawImage(
-      currentSprite,
-      playerX - spriteWidth / 2,
-      playerY - spriteHeight / 2,
-      spriteWidth,
-      spriteHeight,
-    );
-  }
+    // Store previous player position for scrolling logic
+    const prevPlayerX = position[playerEntityId].x;
 
-  // Draw joystick for touch devices
-  if (isTouchDevice && joystickLoaded) {
-    const joystickSize = 128; // Size of the joystick image
-    const margin = 32; // Margin from the edges
-    ctx.globalAlpha = 0.8; // Slight transparency for UI
-    ctx.drawImage(
-      joystickImage,
-      margin,
-      canvas.height - joystickSize - margin,
-      joystickSize,
-      joystickSize,
-    );
-    ctx.globalAlpha = 1.0; // Reset alpha
-  }
+    // Reset movement flag
+    isMoving = false;
 
-  // Other rendering will go here
-}
+    // Handle player movement
+    if (input[playerEntityId].left) {
+      position[playerEntityId].x -= playerSpeed;
+      facingRight = false;
+      isMoving = true;
+    }
+    if (input[playerEntityId].right) {
+      position[playerEntityId].x += playerSpeed;
+      facingRight = true;
+      isMoving = true;
+    }
 
-// Main game loop
-function gameLoop(): void {
-  if (gameRunning) {
-    update();
-    render();
-    requestAnimationFrame(gameLoop);
-  }
-}
+    // Handle jumping
+    if (input[playerEntityId].up && playerIsOnGround) {
+      playerVelocityY = jumpStrength;
+      playerIsOnGround = false;
+    }
 
-// Track loaded assets
-let assetsLoaded = 0;
-const totalAssets = 4; // Background + 3 player sprites
+    // Apply gravity
+    playerVelocityY += gravity;
+    position[playerEntityId].y += playerVelocityY;
 
-function checkAssetsLoaded(): void {
-  assetsLoaded++;
-  if (assetsLoaded === totalAssets) {
-    console.log("All assets loaded");
-    init();
-    gameLoop();
-  }
-}
+    // Check for ground collision
+    if (position[playerEntityId].y >= groundLevel()) {
+      position[playerEntityId].y = groundLevel();
+      playerVelocityY = 0;
+      playerIsOnGround = true;
+    }
 
-// Start the game when all assets are loaded
-backgroundImage.onload = () => {
-  console.log("Background image loaded");
-  checkAssetsLoaded();
-};
-
-playerSprite.onload = () => {
-  console.log("Player default sprite loaded");
-  checkAssetsLoaded();
-};
-
-playerSpriteLeft.onload = () => {
-  console.log("Player left-facing sprite loaded");
-  checkAssetsLoaded();
-};
-
-playerSpriteRight.onload = () => {
-  console.log("Player right-facing sprite loaded");
-  checkAssetsLoaded();
-};
-
-// Handle image load errors
-backgroundImage.onerror = () => {
-  console.error("Failed to load background image");
-  checkAssetsLoaded();
-};
-
-playerSprite.onerror = () => {
-  console.error("Failed to load player default sprite");
-  checkAssetsLoaded();
-};
-
-playerSpriteLeft.onerror = () => {
-  console.error("Failed to load player left-facing sprite");
-  checkAssetsLoaded();
-};
-
-playerSpriteRight.onerror = () => {
-  console.error("Failed to load player right-facing sprite");
-  checkAssetsLoaded();
-};
-
-// Keyboard event listeners
-window.addEventListener("keydown", (event) => {
-  keys[event.code] = true;
-});
-
-window.addEventListener("keyup", (event) => {
-  keys[event.code] = false;
-});
-
-// Joystick touch controls for mobile
-if (isTouchDevice) {
-  const joystickSize = 128;
-  const margin = 32;
-
-  canvas.addEventListener("touchstart", (event) => {
-    for (const touch of Array.from(event.touches)) {
-      const x = touch.clientX;
-      const y = touch.clientY;
-      // Check if touch is within joystick area
+    // Handle background scrolling when moving right
+    if (input[playerEntityId].right) {
       if (
-        x >= margin &&
-        x <= margin + joystickSize &&
-        y >= canvas.height - joystickSize - margin &&
-        y <= canvas.height - margin
+        position[playerEntityId].x >= scrollTriggerX() &&
+        backgroundOffsetX < maxBackgroundOffset()
       ) {
-        joystickTouchId = touch.identifier;
-        joystickActive = true;
-        joystickDir = { left: false, right: false, up: false };
-        event.preventDefault();
-        break;
+        // Player is at trigger point and background can still scroll
+        const scrollAmount = position[playerEntityId].x - prevPlayerX;
+        backgroundOffsetX = Math.min(
+          maxBackgroundOffset(),
+          backgroundOffsetX + scrollAmount,
+        );
+        position[playerEntityId].x = scrollTriggerX(); // Keep player at trigger position
       }
+    }
+
+    // Handle background scrolling when moving left
+    if (input[playerEntityId].left) {
+      if (
+        position[playerEntityId].x <= scrollTriggerLeftX() &&
+        backgroundOffsetX > 0
+      ) {
+        // Player is at left trigger point and background can scroll back
+        const scrollAmount = prevPlayerX - position[playerEntityId].x;
+        backgroundOffsetX = Math.max(0, backgroundOffsetX - scrollAmount);
+        position[playerEntityId].x = scrollTriggerLeftX(); // Keep player at left trigger position
+      }
+    }
+
+    // Keep player within horizontal canvas bounds
+    position[playerEntityId].x = Math.max(
+      32,
+      Math.min(canvas.width - 32, position[playerEntityId].x),
+    );
+
+    // Vertical bounds are handled by gravity and ground collision
+  }
+
+  // Render the game
+  function render(): void {
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Draw background if loaded with scrolling offset
+    if (backgroundImage.complete) {
+      const sourceWidth = backgroundImage.width / 3;
+      ctx.drawImage(
+        backgroundImage,
+        backgroundOffsetX,
+        0,
+        sourceWidth,
+        backgroundImage.height, // source: with offset
+        0,
+        0,
+        canvas.width,
+        canvas.height, // destination: fill canvas
+      );
+    }
+
+    // Draw player sprite if loaded
+    if (
+      playerSprite.complete &&
+      playerSpriteLeft.complete &&
+      playerSpriteRight.complete
+    ) {
+      // Draw sprite centered on player position
+      const spriteWidth = 96; // Adjust size as needed
+      const spriteHeight = 128; // Adjust size as needed
+
+      // Select the appropriate sprite based on movement state and direction
+      let currentSprite = playerSprite; // Default sprite when not moving
+      if (isMoving) {
+        currentSprite = facingRight ? playerSpriteRight : playerSpriteLeft;
+      }
+
+      ctx.drawImage(
+        currentSprite,
+        position[playerEntityId].x - spriteWidth / 2,
+        position[playerEntityId].y - spriteHeight / 2,
+        spriteWidth,
+        spriteHeight,
+      );
+    }
+
+    // Draw joystick for touch devices
+    if (isTouchDevice && joystickLoaded) {
+      const joystickSize = 128; // Size of the joystick image
+      const margin = 32; // Margin from the edges
+      ctx.globalAlpha = 0.8; // Slight transparency for UI
+      ctx.drawImage(
+        joystickImage,
+        margin,
+        canvas.height - joystickSize - margin,
+        joystickSize,
+        joystickSize,
+      );
+      ctx.globalAlpha = 1.0; // Reset alpha
+    }
+
+    // Other rendering will go here
+  }
+
+  // Main game loop
+  function gameLoop(): void {
+    if (gameRunning) {
+      update();
+      render();
+      requestAnimationFrame(gameLoop);
+    }
+  }
+
+  // Track loaded assets
+  let assetsLoaded = 0;
+  const totalAssets = 4; // Background + 3 player sprites
+
+  function checkAssetsLoaded(): void {
+    assetsLoaded++;
+    if (assetsLoaded === totalAssets) {
+      console.log("All assets loaded");
+      init();
+      gameLoop();
+    }
+  }
+
+  // Start the game when all assets are loaded
+  backgroundImage.onload = () => {
+    console.log("Background image loaded");
+    checkAssetsLoaded();
+  };
+
+  playerSprite.onload = () => {
+    console.log("Player default sprite loaded");
+    checkAssetsLoaded();
+  };
+
+  playerSpriteLeft.onload = () => {
+    console.log("Player left-facing sprite loaded");
+    checkAssetsLoaded();
+  };
+
+  playerSpriteRight.onload = () => {
+    console.log("Player right-facing sprite loaded");
+    checkAssetsLoaded();
+  };
+
+  // Handle image load errors
+  backgroundImage.onerror = () => {
+    console.error("Failed to load background image");
+    checkAssetsLoaded();
+  };
+
+  playerSprite.onerror = () => {
+    console.error("Failed to load player default sprite");
+    checkAssetsLoaded();
+  };
+
+  playerSpriteLeft.onerror = () => {
+    console.error("Failed to load player left-facing sprite");
+    checkAssetsLoaded();
+  };
+
+  playerSpriteRight.onerror = () => {
+    console.error("Failed to load player right-facing sprite");
+    checkAssetsLoaded();
+  };
+
+  // Keyboard event listeners
+  window.addEventListener("keydown", (event) => {
+    if (event.code === "ArrowLeft" || event.code === "KeyA") {
+      input[playerEntityId].left = true;
+    }
+    if (event.code === "ArrowRight" || event.code === "KeyD") {
+      input[playerEntityId].right = true;
+    }
+    if (event.code === "ArrowUp" || event.code === "KeyW") {
+      input[playerEntityId].up = true;
     }
   });
 
-  canvas.addEventListener("touchmove", (event) => {
-    if (!joystickActive || joystickTouchId === null) return;
-    for (const touch of Array.from(event.touches)) {
-      if (touch.identifier === joystickTouchId) {
+  window.addEventListener("keyup", (event) => {
+    if (event.code === "ArrowLeft" || event.code === "KeyA") {
+      input[playerEntityId].left = false;
+    }
+    if (event.code === "ArrowRight" || event.code === "KeyD") {
+      input[playerEntityId].right = false;
+    }
+    if (event.code === "ArrowUp" || event.code === "KeyW") {
+      input[playerEntityId].up = false;
+    }
+  });
+
+  // Joystick touch controls for mobile
+  if (isTouchDevice) {
+    const joystickSize = 128;
+    const margin = 32;
+
+    canvas.addEventListener("touchstart", (event) => {
+      for (const touch of Array.from(event.touches)) {
         const x = touch.clientX;
         const y = touch.clientY;
-        const centerX = margin + joystickSize / 2;
-        const centerY = canvas.height - margin - joystickSize / 2;
-        const dx = x - centerX;
-        const dy = y - centerY;
-        // Simple direction detection
-        joystickDir.left = dx < -joystickSize / 4;
-        joystickDir.right = dx > joystickSize / 4;
-        joystickDir.up = dy < -joystickSize / 4;
-        event.preventDefault();
-        break;
+        // Check if touch is within joystick area
+        if (
+          x >= margin &&
+          x <= margin + joystickSize &&
+          y >= canvas.height - joystickSize - margin &&
+          y <= canvas.height - margin
+        ) {
+          joystickTouchId = touch.identifier;
+          joystickActive = true;
+          joystickDir = { left: false, right: false, up: false };
+          event.preventDefault();
+          break;
+        }
       }
-    }
-  });
+    });
 
-  canvas.addEventListener("touchend", (event) => {
-    if (!joystickActive) return;
-    // If the tracked touch ends, reset joystick
-    for (const touch of Array.from(event.changedTouches)) {
-      if (touch.identifier === joystickTouchId) {
-        joystickTouchId = null;
-        joystickActive = false;
-        joystickDir = { left: false, right: false, up: false };
-        event.preventDefault();
-        break;
+    canvas.addEventListener("touchmove", (event) => {
+      if (!joystickActive || joystickTouchId === null) return;
+      for (const touch of Array.from(event.touches)) {
+        if (touch.identifier === joystickTouchId) {
+          const x = touch.clientX;
+          const y = touch.clientY;
+          const centerX = margin + joystickSize / 2;
+          const centerY = canvas.height - margin - joystickSize / 2;
+          const dx = x - centerX;
+          const dy = y - centerY;
+          // Simple direction detection
+          joystickDir.left = dx < -joystickSize / 4;
+          joystickDir.right = dx > joystickSize / 4;
+          joystickDir.up = dy < -joystickSize / 4;
+          event.preventDefault();
+          break;
+        }
       }
-    }
-  });
-}
+    });
+
+    canvas.addEventListener("touchend", (event) => {
+      if (!joystickActive) return;
+      // If the tracked touch ends, reset joystick
+      for (const touch of Array.from(event.changedTouches)) {
+        if (touch.identifier === joystickTouchId) {
+          joystickTouchId = null;
+          joystickActive = false;
+          joystickDir = { left: false, right: false, up: false };
+          event.preventDefault();
+          break;
+        }
+      }
+    });
+  }
+});
