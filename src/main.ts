@@ -41,6 +41,7 @@ const projectile: Projectile = {};
 const projectilePool: EntityId[] = [];
 
 const playerEntityId = createEntity();
+const bossEntityId = createEntity();
 const donutEntityId = createEntity();
 
 const groundLevel = () => canvas.height - 200;
@@ -72,6 +73,18 @@ async function loadComponents() {
     y: groundLevel(),
   };
   velocity[donutEntityId] = { x: 0, y: 0 };
+
+  sprite[bossEntityId] = await createSprite(
+    "/sprites/blackledge.png",
+    96,
+    128,
+    2,
+  );
+  position[bossEntityId] = {
+    x: canvas.width / 1.5,
+    y: groundLevel(),
+  };
+  velocity[bossEntityId] = { x: 0, y: 0 };
 }
 
 loadComponents().then(() => {
@@ -81,6 +94,11 @@ loadComponents().then(() => {
   const jumpStrength = -12;
   let playerVelocityY = 0;
   let playerIsOnGround = true;
+
+  // Boss animation state
+  let bossAnimElapsed = 0;
+  let bossAnimFrame = 0;
+  const bossAnimInterval = 500; // ms
 
   // Background image
   const backgroundImage = new Image();
@@ -127,7 +145,15 @@ loadComponents().then(() => {
   }
 
   // Update game logic
-  function update(): void {
+  function update(delta: number): void {
+    // Boss animation
+    bossAnimElapsed += delta;
+    if (bossAnimElapsed >= bossAnimInterval) {
+      bossAnimElapsed -= bossAnimInterval;
+      bossAnimFrame = bossAnimFrame === 0 ? 1 : 0;
+      sprite[bossEntityId].currentFrame = bossAnimFrame;
+    }
+
     // Handle joystick input (simulate key presses)
     if (isTouchDevice && joystickActive) {
       input[playerEntityId].left = joystickDir.left;
@@ -212,8 +238,6 @@ loadComponents().then(() => {
       Math.min(canvas.width - 32, position[playerEntityId].x),
     );
 
-    // Vertical bounds are handled by gravity and ground collision
-
     // Update projectile positions and deactivate if off screen
     for (const projId in projectile) {
       if (projectile[projId] && projectile[projId].active) {
@@ -276,6 +300,24 @@ loadComponents().then(() => {
       );
     }
 
+    const bossSpriteData = sprite[bossEntityId];
+    if (bossSpriteData && bossSpriteData.image.complete) {
+      const frame = bossSpriteData.currentFrame;
+      const sx = frame * bossSpriteData.width;
+      const sy = 0;
+      ctx.drawImage(
+        bossSpriteData.image,
+        sx,
+        sy,
+        bossSpriteData.width,
+        bossSpriteData.height, // source rect
+        position[bossEntityId].x - bossSpriteData.width / 2,
+        position[bossEntityId].y - bossSpriteData.height / 2,
+        bossSpriteData.width,
+        bossSpriteData.height,
+      );
+    }
+
     // Draw all active projectile entities
     for (const projId in projectile) {
       if (projectile[projId] && projectile[projId].active) {
@@ -316,12 +358,15 @@ loadComponents().then(() => {
   }
 
   // Main game loop
-  function gameLoop(): void {
-    if (gameRunning) {
-      update();
-      render();
-      requestAnimationFrame(gameLoop);
-    }
+  function gameLoop(lastTimestamp = performance.now()): void {
+    if (!gameRunning) return;
+    const now = performance.now();
+    const delta = now - lastTimestamp;
+
+    update(delta);
+    render();
+
+    requestAnimationFrame(() => gameLoop(now));
   }
 
   // Track loaded assets
@@ -333,7 +378,7 @@ loadComponents().then(() => {
     if (assetsLoaded === totalAssets) {
       console.log("All assets loaded");
       init();
-      gameLoop();
+      gameLoop(performance.now());
     }
   }
 
