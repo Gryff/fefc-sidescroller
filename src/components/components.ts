@@ -36,6 +36,13 @@ export type Input = Record<
   }
 >;
 
+export type Projectile = Record<
+  EntityId,
+  {
+    active: boolean;
+  }
+>;
+
 export async function createSprite(
   imageSrc: string,
   frameWidth: number,

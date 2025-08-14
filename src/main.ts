@@ -3,6 +3,7 @@ import {
   type EntityId,
   type Input,
   type Position,
+  type Projectile,
   type Sprite,
   type Velocity,
 } from "./components/components";
@@ -36,8 +37,11 @@ const sprite: Sprite = {};
 const position: Position = {};
 const velocity: Velocity = {};
 const input: Input = {};
+const projectile: Projectile = {};
+const projectilePool: EntityId[] = [];
 
 const playerEntityId = createEntity();
+const donutEntityId = createEntity();
 
 const groundLevel = () => canvas.height - 200;
 
@@ -55,6 +59,19 @@ async function loadComponents() {
   };
   // TODO: continue using these
   velocity[playerEntityId] = { x: 0, y: 0 };
+
+  // Donut entity setup
+  sprite[donutEntityId] = await createSprite(
+    "/sprites/donut.png",
+    48,
+    48,
+    1, // only one frame
+  );
+  position[donutEntityId] = {
+    x: canvas.width / 2 + 150, // place to the right of the player
+    y: groundLevel(),
+  };
+  velocity[donutEntityId] = { x: 0, y: 0 };
 }
 
 loadComponents().then(() => {
@@ -196,6 +213,27 @@ loadComponents().then(() => {
     );
 
     // Vertical bounds are handled by gravity and ground collision
+
+    // Update projectile positions and deactivate if off screen
+    for (const projId in projectile) {
+      if (projectile[projId] && projectile[projId].active) {
+        // Move projectile by its velocity
+        if (position[projId] && velocity[projId]) {
+          position[projId].x += velocity[projId].x;
+          position[projId].y += velocity[projId].y;
+          // Deactivate if projectile leaves the visible canvas area
+          if (
+            position[projId].x < 0 ||
+            position[projId].x > canvas.width ||
+            position[projId].y < 0 ||
+            position[projId].y > canvas.height
+          ) {
+            projectile[projId].active = false;
+            projectilePool.push(Number(projId));
+          }
+        }
+      }
+    }
   }
 
   // Render the game
@@ -236,6 +274,29 @@ loadComponents().then(() => {
         playerSpriteData.width,
         playerSpriteData.height,
       );
+    }
+
+    const donutSpriteData = sprite[donutEntityId];
+
+    // Draw all active projectile entities
+    for (const projId in projectile) {
+      if (projectile[projId] && projectile[projId].active) {
+        const projSprite = sprite[projId];
+        const projPos = position[projId];
+        if (projSprite && projSprite.image.complete && projPos) {
+          ctx.drawImage(
+            projSprite.image,
+            0,
+            0,
+            projSprite.width,
+            projSprite.height,
+            projPos.x - projSprite.width / 2,
+            projPos.y - projSprite.height / 2,
+            projSprite.width,
+            projSprite.height,
+          );
+        }
+      }
     }
 
     // Draw joystick for touch devices
@@ -300,6 +361,37 @@ loadComponents().then(() => {
     }
     if (event.code === "ArrowUp" || event.code === "KeyW") {
       input[playerEntityId].up = true;
+    }
+    // Spacebar: fire projectile (donut)
+    if (event.code === "Space") {
+      // Use object pooling: reuse inactive projectile or create new
+      let projEntityId: EntityId;
+      if (projectilePool.length > 0) {
+        projEntityId = projectilePool.pop()!;
+      } else {
+        projEntityId = createEntity();
+      }
+      // Copy donut sprite data (reuse loaded image/frame info)
+      const donutSpriteData = sprite[donutEntityId];
+      if (donutSpriteData && donutSpriteData.image.complete) {
+        sprite[projEntityId] = {
+          ...donutSpriteData,
+          // Optionally, set currentFrame if animating projectile
+          currentFrame: 0,
+        };
+        // Start at player's current position (centered)
+        position[projEntityId] = {
+          x: position[playerEntityId].x,
+          y: position[playerEntityId].y,
+        };
+        // Fire in the direction the player is facing
+        const speed = 8;
+        velocity[projEntityId] = {
+          x: facingRight ? speed : -speed,
+          y: 0,
+        };
+        projectile[projEntityId] = { active: true };
+      }
     }
   });
 
