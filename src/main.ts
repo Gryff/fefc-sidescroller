@@ -276,8 +276,6 @@ loadComponents().then(() => {
       );
     }
 
-    const donutSpriteData = sprite[donutEntityId];
-
     // Draw all active projectile entities
     for (const projId in projectile) {
       if (projectile[projId] && projectile[projId].active) {
