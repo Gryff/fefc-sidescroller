@@ -47,6 +47,7 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 
 ### High Priority (bugs)
 - ~~**Frame-rate dependent physics**: `PLAYER.speed` and `PHYSICS.gravity` are applied as flat per-frame values, not scaled by `delta`. Game speed is tied to frame rate — 144Hz runs 2.4× faster than 60Hz. Boss animation correctly uses `delta`; movement and physics need the same treatment.~~ ✅ Fixed.
+- **rAF timestamp not used**: `requestAnimationFrame(() => gameLoop(now))` re-captures `performance.now()` mid-frame rather than using the high-resolution timestamp that rAF provides. Should be `requestAnimationFrame((ts) => gameLoop(ts))` so `delta` is measured from the true frame-start time.
 - **Resize doesn't reposition entities**: Entity Y positions are computed once at startup via `groundLevel(canvas.height)`. After a window resize, `resizeCanvas` updates canvas dimensions but entities stay at stale positions.
 
 ### Medium Priority (architecture)
