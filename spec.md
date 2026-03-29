@@ -42,6 +42,26 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 
 ---
 
+## To Fix
+
+### High Priority (bugs)
+- **Frame-rate dependent physics**: `PLAYER.speed` and `PHYSICS.gravity` are applied as flat per-frame values, not scaled by `delta`. Game speed is tied to frame rate — 144Hz runs 2.4× faster than 60Hz. Boss animation correctly uses `delta`; movement and physics need the same treatment.
+- **Resize doesn't reposition entities**: Entity Y positions are computed once at startup via `groundLevel(canvas.height)`. After a window resize, `resizeCanvas` updates canvas dimensions but entities stay at stale positions.
+
+### Medium Priority (architecture)
+- **ECS is hardcoded to specific entity IDs**: Systems receive `playerEntityId`/`bossEntityId` explicitly. Adding a second enemy requires changing function signatures. Systems should query entities by component, not by hardcoded ID.
+- **Movement system sets sprite frames**: `systems/movement.ts` writes `sprite[playerEntityId].currentFrame` — a rendering concern inside a movement system. An animation system should observe movement state and drive sprites.
+- **`donutEntityId` is dual-purpose**: Used as both a world entity on the ground and a sprite template for projectiles. These are different things and should not be the same entity.
+
+### Low Priority (code quality)
+- **`applyJoystickInput` in wrong module**: `input/touch.ts` contains both one-time setup (`setupTouchInput`) and per-frame logic (`applyJoystickInput`). The per-frame function belongs closer to the game loop, not in the setup module.
+- **Unsafe DOM casts in `canvas.ts`**: `getElementById` and `getContext("2d")` are cast with `as` and no null check — throws at runtime with no useful error if the element is missing.
+- **Magic number `canvas.width / 1.5`** in `ecs/entities.ts:51` — survived the `config.ts` refactor.
+- **`BACKGROUND.sourceWidthDivisor`** is an implementation detail, not an intent. Rename to something like `BACKGROUND_STRIP_COUNT`.
+- **`spawnProjectile` silently no-ops** if the donut sprite isn't loaded — no error, no feedback to the player.
+
+---
+
 ## Inspirations
 
 - Classic 2D platformers (e.g., Mario, Sonic).
