@@ -7,6 +7,7 @@ export function updatePhysics(
   playerEntityId: EntityId,
   playerState: PlayerState,
   canvasHeight: number,
+  dt: number,
 ): void {
   // Jump
   if (input[playerEntityId].up && playerState.isOnGround) {
@@ -15,8 +16,8 @@ export function updatePhysics(
   }
 
   // Gravity
-  playerState.velocityY += PHYSICS.gravity;
-  position[playerEntityId].y += playerState.velocityY;
+  playerState.velocityY += PHYSICS.gravity * dt;
+  position[playerEntityId].y += playerState.velocityY * dt;
 
   // Ground collision
   const ground = groundLevel(canvasHeight);

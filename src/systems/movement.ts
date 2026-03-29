@@ -7,18 +7,19 @@ import { input, position, sprite } from "../ecs/stores";
 export function updateMovement(
   playerEntityId: EntityId,
   playerState: PlayerState,
+  dt: number,
 ): number {
   const prevPlayerX = position[playerEntityId].x;
 
   playerState.isMoving = false;
 
   if (input[playerEntityId].left) {
-    position[playerEntityId].x -= PLAYER.speed;
+    position[playerEntityId].x -= PLAYER.speed * dt;
     playerState.facingRight = false;
     playerState.isMoving = true;
   }
   if (input[playerEntityId].right) {
-    position[playerEntityId].x += PLAYER.speed;
+    position[playerEntityId].x += PLAYER.speed * dt;
     playerState.facingRight = true;
     playerState.isMoving = true;
   }

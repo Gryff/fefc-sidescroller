@@ -1,4 +1,7 @@
-// All game constants in one place for easy tuning
+// All game constants in one place for easy tuning.
+// Speed/velocity/gravity values are expressed in units-per-frame at 60fps.
+// The game loop normalises delta time (dt=1.0 at 60fps) before passing it to
+// each system, so these values translate correctly at any refresh rate.
 
 export const PLAYER = {
   speed: 3,
