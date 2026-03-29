@@ -36,12 +36,12 @@ export function spawnProjectile(
   }
 }
 
-export function updateProjectiles(canvas: HTMLCanvasElement): void {
+export function updateProjectiles(canvas: HTMLCanvasElement, dt: number): void {
   for (const projId in projectile) {
     if (projectile[projId] && projectile[projId].active) {
       if (position[projId] && velocity[projId]) {
-        position[projId].x += velocity[projId].x;
-        position[projId].y += velocity[projId].y;
+        position[projId].x += velocity[projId].x * dt;
+        position[projId].y += velocity[projId].y * dt;
 
         if (
           position[projId].x < 0 ||

@@ -21,6 +21,7 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
   - Player can jump when on the ground.
   - Gravity pulls the player down, with ground collision detection.
 - ✅ Asset Loading: Game waits for all images to load before starting.
+- ✅ Framerate-independent game loop: Delta time is normalised to 60fps (dt=1.0 at 60fps). All movement, physics, and projectile systems scale by dt so behaviour is consistent at any refresh rate. Delta is capped at 100ms to prevent large position jumps after tab backgrounding.
 
 ### Not Done 🙅‍♂️
 - 🚧 Touch/Mobile Controls: Expand touch/joystick support for mobile gameplay.
@@ -45,7 +46,7 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 ## To Fix
 
 ### High Priority (bugs)
-- **Frame-rate dependent physics**: `PLAYER.speed` and `PHYSICS.gravity` are applied as flat per-frame values, not scaled by `delta`. Game speed is tied to frame rate — 144Hz runs 2.4× faster than 60Hz. Boss animation correctly uses `delta`; movement and physics need the same treatment.
+- ~~**Frame-rate dependent physics**: `PLAYER.speed` and `PHYSICS.gravity` are applied as flat per-frame values, not scaled by `delta`. Game speed is tied to frame rate — 144Hz runs 2.4× faster than 60Hz. Boss animation correctly uses `delta`; movement and physics need the same treatment.~~ ✅ Fixed.
 - **Resize doesn't reposition entities**: Entity Y positions are computed once at startup via `groundLevel(canvas.height)`. After a window resize, `resizeCanvas` updates canvas dimensions but entities stay at stale positions.
 
 ### Medium Priority (architecture)
