@@ -31,6 +31,7 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 - 🙅‍♂️ Sound Effects & Music: Add audio feedback for actions and background music.
 - 🙅‍♂️ Score & Progression: Track player progress, collectibles, or score.
 - 🙅‍♂️ Game States: Add menus, pause, restart, and win/lose conditions.
+- 🙅‍♂️ Resize Repositioning: Recompute entity positions on window resize so sprites stay at correct ground level and within canvas bounds.
 - 🙅‍♂️ Performance Optimization: Optimize rendering and asset management for smooth gameplay.
 
 ---
@@ -45,15 +46,8 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 
 ## To Fix
 
-### High Priority (bugs)
-- ~~**Frame-rate dependent physics**: `PLAYER.speed` and `PHYSICS.gravity` are applied as flat per-frame values, not scaled by `delta`. Game speed is tied to frame rate — 144Hz runs 2.4× faster than 60Hz. Boss animation correctly uses `delta`; movement and physics need the same treatment.~~ ✅ Fixed.
-- **rAF timestamp not used**: `requestAnimationFrame(() => gameLoop(now))` re-captures `performance.now()` mid-frame rather than using the high-resolution timestamp that rAF provides. Should be `requestAnimationFrame((ts) => gameLoop(ts))` so `delta` is measured from the true frame-start time.
-- **Resize doesn't reposition entities**: Entity Y positions are computed once at startup via `groundLevel(canvas.height)`. After a window resize, `resizeCanvas` updates canvas dimensions but entities stay at stale positions.
-
 ### Medium Priority (architecture)
 - **ECS is hardcoded to specific entity IDs**: Systems receive `playerEntityId`/`bossEntityId` explicitly. Adding a second enemy requires changing function signatures. Systems should query entities by component, not by hardcoded ID.
-- **Movement system sets sprite frames**: `systems/movement.ts` writes `sprite[playerEntityId].currentFrame` — a rendering concern inside a movement system. An animation system should observe movement state and drive sprites.
-- **`donutEntityId` is dual-purpose**: Used as both a world entity on the ground and a sprite template for projectiles. These are different things and should not be the same entity.
 
 ### Low Priority (code quality)
 - **`applyJoystickInput` in wrong module**: `input/touch.ts` contains both one-time setup (`setupTouchInput`) and per-frame logic (`applyJoystickInput`). The per-frame function belongs closer to the game loop, not in the setup module.

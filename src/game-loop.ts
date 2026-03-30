@@ -3,6 +3,7 @@ import { applyJoystickInput } from "./input/touch";
 import { render } from "./rendering/renderer";
 import { updateBossAnimation } from "./systems/boss-animation";
 import { updateMovement } from "./systems/movement";
+import { updatePlayerAnimation } from "./systems/player-animation";
 import { updatePhysics } from "./systems/physics";
 import { updateProjectiles } from "./systems/projectile";
 import { updateScrolling } from "./systems/scrolling";
@@ -25,6 +26,7 @@ function update(
   applyJoystickInput(playerEntityId, state.joystick, isTouchDevice);
 
   const prevPlayerX = updateMovement(playerEntityId, state.player, dt);
+  updatePlayerAnimation(playerEntityId, state.player);
   updatePhysics(playerEntityId, state.player, canvas.height, dt);
   updateScrolling(
     playerEntityId,
@@ -43,16 +45,18 @@ export function startGameLoop(
 ): void {
   console.log("Game initialized");
 
-  function gameLoop(lastTimestamp = performance.now()): void {
-    if (!state.gameRunning) return;
-    const now = performance.now();
-    const delta = Math.min(now - lastTimestamp, MAX_DELTA_MS);
+  function gameLoop(lastTimestamp?: number): void {
+    requestAnimationFrame((ts) => {
+      if (!state.gameRunning) return;
+      const delta =
+        lastTimestamp != null ? Math.min(ts - lastTimestamp, MAX_DELTA_MS) : 0;
 
-    update(delta, gameCtx, state, assets);
-    render(gameCtx, state, assets);
+      update(delta, gameCtx, state, assets);
+      render(gameCtx, state, assets);
 
-    requestAnimationFrame(() => gameLoop(now));
+      gameLoop(ts);
+    });
   }
 
-  gameLoop(performance.now());
+  gameLoop();
 }

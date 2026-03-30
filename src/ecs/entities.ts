@@ -1,4 +1,4 @@
-import type { EntityId } from "../components/components";
+import type { EntityId, Sprite } from "../components/components";
 import { createSprite } from "../components/components";
 import { groundLevel } from "../config";
 import {
@@ -12,7 +12,7 @@ import {
 export interface EntityIds {
   playerEntityId: EntityId;
   bossEntityId: EntityId;
-  donutEntityId: EntityId;
+  projectileSpriteTemplate: Sprite[number];
 }
 
 export async function loadEntities(
@@ -20,7 +20,6 @@ export async function loadEntities(
 ): Promise<EntityIds> {
   const playerEntityId = createEntity();
   const bossEntityId = createEntity();
-  const donutEntityId = createEntity();
 
   sprite[playerEntityId] = await createSprite(
     "/sprites/tris-sheet.png",
@@ -35,12 +34,7 @@ export async function loadEntities(
   };
   velocity[playerEntityId] = { x: 0, y: 0 };
 
-  sprite[donutEntityId] = await createSprite("/sprites/donut.png", 48, 48, 1);
-  position[donutEntityId] = {
-    x: canvas.width / 2 + 150,
-    y: groundLevel(canvas.height),
-  };
-  velocity[donutEntityId] = { x: 0, y: 0 };
+  const projectileSpriteTemplate = await createSprite("/sprites/donut.png", 48, 48, 1);
 
   sprite[bossEntityId] = await createSprite(
     "/sprites/blackledge.png",
@@ -54,5 +48,5 @@ export async function loadEntities(
   };
   velocity[bossEntityId] = { x: 0, y: 0 };
 
-  return { playerEntityId, bossEntityId, donutEntityId };
+  return { playerEntityId, bossEntityId, projectileSpriteTemplate };
 }

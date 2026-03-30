@@ -1,4 +1,4 @@
-import type { EntityId } from "../components/components";
+import type { EntityId, Sprite } from "../components/components";
 import { PROJECTILE } from "../config";
 import {
   createEntity,
@@ -11,7 +11,7 @@ import {
 
 export function spawnProjectile(
   playerEntityId: EntityId,
-  donutEntityId: EntityId,
+  template: Sprite[number],
   facingRight: boolean,
 ): void {
   let projEntityId: EntityId;
@@ -21,9 +21,8 @@ export function spawnProjectile(
     projEntityId = createEntity();
   }
 
-  const donutSpriteData = sprite[donutEntityId];
-  if (donutSpriteData && donutSpriteData.image.complete) {
-    sprite[projEntityId] = { ...donutSpriteData, currentFrame: 0 };
+  if (template.image.complete) {
+    sprite[projEntityId] = { ...template, currentFrame: 0 };
     position[projEntityId] = {
       x: position[playerEntityId].x,
       y: position[playerEntityId].y,

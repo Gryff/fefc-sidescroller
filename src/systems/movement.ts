@@ -1,9 +1,9 @@
 import type { EntityId } from "../components/components";
 import { PLAYER } from "../config";
 import type { PlayerState } from "../types";
-import { input, position, sprite } from "../ecs/stores";
+import { input, position } from "../ecs/stores";
 
-/** Updates player movement and sprite frame. Returns previous X for scrolling. */
+/** Updates player movement. Returns previous X for scrolling. */
 export function updateMovement(
   playerEntityId: EntityId,
   playerState: PlayerState,
@@ -22,12 +22,6 @@ export function updateMovement(
     position[playerEntityId].x += PLAYER.speed * dt;
     playerState.facingRight = true;
     playerState.isMoving = true;
-  }
-
-  if (playerState.isMoving) {
-    sprite[playerEntityId].currentFrame = playerState.facingRight ? 2 : 1;
-  } else {
-    sprite[playerEntityId].currentFrame = 0;
   }
 
   return prevPlayerX;
