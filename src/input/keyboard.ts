@@ -1,13 +1,14 @@
-import type { EntityId } from "../components/components";
-import type { PlayerState } from "../types";
+import { entitiesWith } from "../ecs/query";
 import { input } from "../ecs/stores";
+import type { PlayerState } from "../types";
 
 export function setupKeyboardInput(
-  playerEntityId: EntityId,
   playerState: PlayerState,
   onFire: () => void,
 ): void {
   window.addEventListener("keydown", (event) => {
+    const [playerEntityId] = entitiesWith("playerTag", "input");
+    if (playerEntityId === undefined) return;
     if (event.code === "ArrowLeft" || event.code === "KeyA") {
       input[playerEntityId].left = true;
     }
@@ -25,6 +26,8 @@ export function setupKeyboardInput(
   });
 
   window.addEventListener("keyup", (event) => {
+    const [playerEntityId] = entitiesWith("playerTag", "input");
+    if (playerEntityId === undefined) return;
     if (event.code === "ArrowLeft" || event.code === "KeyA") {
       input[playerEntityId].left = false;
     }

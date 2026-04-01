@@ -1,7 +1,7 @@
-import type { EntityId } from "../components/components";
 import { JOYSTICK } from "../config";
-import type { JoystickState } from "../types";
+import { entitiesWith } from "../ecs/query";
 import { input } from "../ecs/stores";
+import type { JoystickState } from "../types";
 
 export function detectTouchDevice(): boolean {
   return (
@@ -11,15 +11,15 @@ export function detectTouchDevice(): boolean {
 }
 
 export function applyJoystickInput(
-  playerEntityId: EntityId,
   joystickState: JoystickState,
   isTouchDevice: boolean,
 ): void {
-  if (isTouchDevice && joystickState.active) {
-    input[playerEntityId].left = joystickState.dir.left;
-    input[playerEntityId].right = joystickState.dir.right;
-    input[playerEntityId].up = joystickState.dir.up;
-  }
+  if (!isTouchDevice || !joystickState.active) return;
+  const [playerEntityId] = entitiesWith("playerTag", "input");
+  if (playerEntityId === undefined) return;
+  input[playerEntityId].left = joystickState.dir.left;
+  input[playerEntityId].right = joystickState.dir.right;
+  input[playerEntityId].up = joystickState.dir.up;
 }
 
 export function setupTouchInput(

@@ -1,15 +1,17 @@
-import type { EntityId } from "../components/components";
 import { PLAYER, SCROLL } from "../config";
-import type { ScrollState } from "../types";
+import { entitiesWith } from "../ecs/query";
 import { input, position } from "../ecs/stores";
+import type { ScrollState } from "../types";
 
 export function updateScrolling(
-  playerEntityId: EntityId,
   scrollState: ScrollState,
   canvas: HTMLCanvasElement,
   backgroundImage: HTMLImageElement,
   prevPlayerX: number,
 ): void {
+  const [playerEntityId] = entitiesWith("playerTag", "position", "input");
+  if (playerEntityId === undefined) return;
+
   const scrollTriggerX = canvas.width * SCROLL.triggerRightFraction;
   const scrollTriggerLeftX = canvas.width * SCROLL.triggerLeftFraction;
   const maxBackgroundOffset =

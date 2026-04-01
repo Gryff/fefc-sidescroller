@@ -1,14 +1,16 @@
-import type { EntityId } from "../components/components";
 import { PHYSICS, PLAYER, groundLevel } from "../config";
-import type { PlayerState } from "../types";
+import { entitiesWith } from "../ecs/query";
 import { input, position } from "../ecs/stores";
+import type { PlayerState } from "../types";
 
 export function updatePhysics(
-  playerEntityId: EntityId,
   playerState: PlayerState,
   canvasHeight: number,
   dt: number,
 ): void {
+  const [playerEntityId] = entitiesWith("playerTag", "position", "input");
+  if (playerEntityId === undefined) return;
+
   // Jump
   if (input[playerEntityId].up && playerState.isOnGround) {
     playerState.velocityY = PLAYER.jumpStrength;

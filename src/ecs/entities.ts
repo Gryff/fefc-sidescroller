@@ -3,22 +3,22 @@ import { createAnimatedSprite, createSprite } from "../components/components";
 import { CHARACTER_ANIMATIONS, groundLevel } from "../config";
 import {
   createEntity,
+  enemyTag,
   input,
+  playerTag,
   position,
   sprite,
   velocity,
 } from "./stores";
 
 export interface EntityIds {
-  playerEntityId: EntityId;
-  bossEntityId: EntityId;
   projectileSpriteTemplate: Sprite[number];
 }
 
 export async function loadEntities(
   canvas: HTMLCanvasElement,
 ): Promise<EntityIds> {
-  const playerEntityId = await createAssetPackPlayer(canvas);
+  await createAssetPackPlayer(canvas);
   const bossEntityId = createEntity();
 
   const projectileSpriteTemplate = await createSprite("/sprites/donut.png", 48, 48, 1);
@@ -34,8 +34,9 @@ export async function loadEntities(
     y: groundLevel(canvas.height),
   };
   velocity[bossEntityId] = { x: 0, y: 0 };
+  enemyTag[bossEntityId] = true;
 
-  return { playerEntityId, bossEntityId, projectileSpriteTemplate };
+  return { projectileSpriteTemplate };
 }
 
 export async function createAssetPackPlayer(
@@ -61,6 +62,7 @@ export async function createAssetPackPlayer(
     y: groundLevel(canvas.height),
   };
   velocity[entityId] = { x: 0, y: 0 };
+  playerTag[entityId] = true;
 
   return entityId;
 }

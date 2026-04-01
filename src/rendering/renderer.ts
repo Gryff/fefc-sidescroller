@@ -1,5 +1,6 @@
 import type { EntityId } from "../components/components";
 import { BACKGROUND, JOYSTICK } from "../config";
+import { entitiesWith } from "../ecs/query";
 import type { GameAssets, GameContext, GameState } from "../types";
 import { position, projectile, sprite } from "../ecs/stores";
 
@@ -50,7 +51,7 @@ export function render(
   state: GameState,
   assets: GameAssets,
 ): void {
-  const { canvas, ctx, playerEntityId, bossEntityId, isTouchDevice } = gameCtx;
+  const { canvas, ctx, isTouchDevice } = gameCtx;
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -71,8 +72,12 @@ export function render(
   }
 
   // Entities
-  drawSprite(ctx, playerEntityId);
-  drawSprite(ctx, bossEntityId);
+  for (const id of entitiesWith("playerTag", "sprite")) {
+    drawSprite(ctx, id);
+  }
+  for (const id of entitiesWith("enemyTag", "sprite")) {
+    drawSprite(ctx, id);
+  }
 
   // Projectiles
   for (const projId in projectile) {
