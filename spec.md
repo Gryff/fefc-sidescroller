@@ -49,6 +49,9 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 ### Medium Priority (architecture)
 - **ECS is hardcoded to specific entity IDs**: Systems receive `playerEntityId`/`bossEntityId` explicitly. Adding a second enemy requires changing function signatures. Systems should query entities by component, not by hardcoded ID.
 
+### Low Priority (animation)
+- **Sprite animation doesn't catch up after lag spikes**: `updateSpriteAnimation` subtracts one `frameDuration` per tick, so a large delta only advances one frame. The animation temporarily slows down instead of skipping ahead. Cosmetic-only impact.
+
 ### Low Priority (code quality)
 - **`applyJoystickInput` in wrong module**: `input/touch.ts` contains both one-time setup (`setupTouchInput`) and per-frame logic (`applyJoystickInput`). The per-frame function belongs closer to the game loop, not in the setup module.
 - **Unsafe DOM casts in `canvas.ts`**: `getElementById` and `getContext("2d")` are cast with `as` and no null check — throws at runtime with no useful error if the element is missing.

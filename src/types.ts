@@ -5,6 +5,8 @@ export interface PlayerState {
   isOnGround: boolean;
   facingRight: boolean;
   isMoving: boolean;
+  isAttacking: boolean;
+  attackTimer: number;
 }
 
 export interface BossAnimState {

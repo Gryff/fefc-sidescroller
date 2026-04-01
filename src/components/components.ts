@@ -1,5 +1,14 @@
 export type EntityId = number;
 
+export interface AnimationDef {
+  row: number;
+  frameCount: number;
+  frameDuration: number; // ms per frame
+  loop: boolean;
+}
+
+export type AnimationMap = Record<string, AnimationDef>;
+
 export type Sprite = Record<
   EntityId,
   {
@@ -8,6 +17,11 @@ export type Sprite = Record<
     height: number; // height of a single frame
     frameCount: number; // total frames in the sheet
     currentFrame: number; // which frame to render
+    animations?: AnimationMap;
+    currentAnimation?: string;
+    animationElapsed?: number;
+    layers?: HTMLImageElement[];
+    flipX?: boolean;
   }
 >;
 
@@ -59,5 +73,36 @@ export async function createSprite(
     height: frameHeight,
     frameCount,
     currentFrame: 0,
+  };
+}
+
+export async function createAnimatedSprite(
+  imageSrcs: string[],
+  frameWidth: number,
+  frameHeight: number,
+  animations: AnimationMap,
+  initialAnimation: string,
+): Promise<Sprite[number]> {
+  const images = await Promise.all(
+    imageSrcs.map((src) => {
+      const img = new Image();
+      img.src = src;
+      return img.decode().then(() => img);
+    }),
+  );
+
+  const [base, ...layerImages] = images;
+  const anim = animations[initialAnimation];
+
+  return {
+    image: base,
+    width: frameWidth,
+    height: frameHeight,
+    frameCount: anim.frameCount,
+    currentFrame: 0,
+    animations,
+    currentAnimation: initialAnimation,
+    animationElapsed: 0,
+    layers: layerImages.length > 0 ? layerImages : undefined,
   };
 }

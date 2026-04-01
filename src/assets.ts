@@ -1,19 +1,13 @@
 import type { GameAssets } from "./types";
 
-export function loadAssets(): Promise<GameAssets> {
-  return new Promise((resolve, reject) => {
-    const backgroundImage = new Image();
-    backgroundImage.src = "/background.png";
+export async function loadAssets(): Promise<GameAssets> {
+  const backgroundImage = new Image();
+  backgroundImage.src = "/background.png";
 
-    const joystickImage = new Image();
-    joystickImage.src = "/joystick.png";
+  const joystickImage = new Image();
+  joystickImage.src = "/joystick.png";
 
-    backgroundImage.onload = () => {
-      resolve({ backgroundImage, joystickImage });
-    };
+  await Promise.all([backgroundImage.decode(), joystickImage.decode()]);
 
-    backgroundImage.onerror = () => {
-      reject(new Error("Failed to load background image"));
-    };
-  });
+  return { backgroundImage, joystickImage };
 }

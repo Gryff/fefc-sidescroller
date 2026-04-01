@@ -1,8 +1,10 @@
 import type { EntityId } from "../components/components";
+import type { PlayerState } from "../types";
 import { input } from "../ecs/stores";
 
 export function setupKeyboardInput(
   playerEntityId: EntityId,
+  playerState: PlayerState,
   onFire: () => void,
 ): void {
   window.addEventListener("keydown", (event) => {
@@ -16,6 +18,8 @@ export function setupKeyboardInput(
       input[playerEntityId].up = true;
     }
     if (event.code === "Space") {
+      playerState.isAttacking = true;
+      playerState.attackTimer = 0;
       onFire();
     }
   });

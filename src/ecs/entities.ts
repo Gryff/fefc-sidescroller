@@ -1,6 +1,6 @@
 import type { EntityId, Sprite } from "../components/components";
-import { createSprite } from "../components/components";
-import { groundLevel } from "../config";
+import { createAnimatedSprite, createSprite } from "../components/components";
+import { CHARACTER_ANIMATIONS, groundLevel } from "../config";
 import {
   createEntity,
   input,
@@ -18,21 +18,8 @@ export interface EntityIds {
 export async function loadEntities(
   canvas: HTMLCanvasElement,
 ): Promise<EntityIds> {
-  const playerEntityId = createEntity();
+  const playerEntityId = await createAssetPackPlayer(canvas);
   const bossEntityId = createEntity();
-
-  sprite[playerEntityId] = await createSprite(
-    "/sprites/tris-sheet.png",
-    96,
-    128,
-    3,
-  );
-  input[playerEntityId] = { left: false, right: false, up: false };
-  position[playerEntityId] = {
-    x: canvas.width / 2,
-    y: groundLevel(canvas.height),
-  };
-  velocity[playerEntityId] = { x: 0, y: 0 };
 
   const projectileSpriteTemplate = await createSprite("/sprites/donut.png", 48, 48, 1);
 
@@ -49,4 +36,31 @@ export async function loadEntities(
   velocity[bossEntityId] = { x: 0, y: 0 };
 
   return { playerEntityId, bossEntityId, projectileSpriteTemplate };
+}
+
+export async function createAssetPackPlayer(
+  canvas: HTMLCanvasElement,
+): Promise<EntityId> {
+  const entityId = createEntity();
+
+  sprite[entityId] = await createAnimatedSprite(
+    [
+      "/assetpack/Character skin colors/Male Skin1.png",
+      "/assetpack/Male Hair/Male Hair1.png",
+      "/assetpack/Male Clothing/Blue Shirt v2.png",
+      "/assetpack/Male Clothing/Blue Pants.png",
+    ],
+    80,
+    64,
+    CHARACTER_ANIMATIONS,
+    "idle",
+  );
+  input[entityId] = { left: false, right: false, up: false };
+  position[entityId] = {
+    x: canvas.width / 2,
+    y: groundLevel(canvas.height),
+  };
+  velocity[entityId] = { x: 0, y: 0 };
+
+  return entityId;
 }

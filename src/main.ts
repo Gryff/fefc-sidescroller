@@ -20,6 +20,8 @@ const state: GameState = {
     isOnGround: true,
     facingRight: false,
     isMoving: false,
+    isAttacking: false,
+    attackTimer: 0,
   },
   boss: { elapsed: 0, frame: 0 },
   scroll: { backgroundOffsetX: 0 },
@@ -41,7 +43,7 @@ const gameCtx: GameContext = {
 };
 
 // Input
-setupKeyboardInput(playerEntityId, () =>
+setupKeyboardInput(playerEntityId, state.player, () =>
   spawnProjectile(playerEntityId, projectileSpriteTemplate, state.player.facingRight),
 );
 
