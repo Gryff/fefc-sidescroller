@@ -1,4 +1,4 @@
-import type { EntityId, Sprite } from "../components/components";
+import type { Sprite } from "../components/components";
 import { createAnimatedSprite, createSprite } from "../components/components";
 import { CHARACTER_ANIMATIONS, groundLevel } from "../config";
 import {
@@ -37,7 +37,7 @@ export async function loadEntities(
 
 export async function createAssetPackPlayer(
   canvas: HTMLCanvasElement,
-): Promise<EntityId> {
+): Promise<void> {
   const entityId = createEntity();
 
   sprite[entityId] = await createAnimatedSprite(
@@ -59,6 +59,4 @@ export async function createAssetPackPlayer(
   };
   velocity[entityId] = { x: 0, y: 0 };
   playerTag[entityId] = true;
-
-  return entityId;
 }
