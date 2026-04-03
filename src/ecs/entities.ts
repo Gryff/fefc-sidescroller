@@ -11,13 +11,9 @@ import {
   velocity,
 } from "./stores";
 
-export interface EntityIds {
-  projectileSpriteTemplate: Sprite[number];
-}
-
 export async function loadEntities(
   canvas: HTMLCanvasElement,
-): Promise<EntityIds> {
+): Promise<{ projectileSpriteTemplate: Sprite[number] }> {
   await createAssetPackPlayer(canvas);
   const bossEntityId = createEntity();
 
