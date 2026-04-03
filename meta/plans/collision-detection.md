@@ -1,10 +1,8 @@
-# Collision Detection + Entity Query Refactor
+# Collision Detection
 
 ## Context
 
 The game has zero collision detection between entities. The only spatial check is clamping the player's Y to `groundLevel` in `physics.ts`. Projectiles fly through the boss, the player walks through the boss, etc.
-
-Additionally, the ECS has a hardcoded entity ID problem (flagged in spec.md): systems receive `playerEntityId`/`bossEntityId` as explicit parameters. This must be fixed first — collision detection depends on being able to query entities by component.
 
 ## Approach: AABB (Axis-Aligned Bounding Box)
 
@@ -12,77 +10,46 @@ Simplest fit for the game. Sprites are axis-aligned rectangles, entity count is 
 
 ---
 
-## Phase 1: Query Infrastructure
+## Status
 
-### 1.1 Entity query helper
+**Phase 1 and Phase 2 are complete.**
 
-Add an `entitiesWith()` function to `ecs/stores.ts` (or a new `ecs/query.ts`):
+- `entitiesWith()` exists in `ecs/query.ts`
+- `PlayerTag` / `EnemyTag` types and stores exist
+- Tags are attached in `entities.ts`
+- All systems query internally; `GameContext` carries no entity IDs
+- `playerEntityId` / `bossEntityId` are gone from `GameContext`
 
-```ts
-function entitiesWith<K extends keyof ComponentStores>(
-  ...keys: K[]
-): EntityId[]
-```
-
-Returns all EntityIds present in every specified component store. This replaces hardcoded ID passing throughout the codebase.
-
-### 1.2 Tag components
-
-Add marker components to distinguish entity roles without hardcoded IDs:
-
-- `PlayerTag` — `Record<EntityId, true>`
-- `EnemyTag` — `Record<EntityId, true>`
-
-Add to `components.ts` as types, add stores to `stores.ts`.
-
-### 1.3 Attach tags during entity creation
-
-In `ecs/entities.ts`:
-- `createAssetPackPlayer()` attaches `PlayerTag`
-- `loadEntities()` boss creation attaches `EnemyTag`
-
-### Files touched
-- `src/components/components.ts` — new tag types
-- `src/ecs/stores.ts` — new tag stores
-- `src/ecs/query.ts` (new) — `entitiesWith()` helper
-- `src/ecs/entities.ts` — attach tags on creation
+**Phase 3 (collision detection itself) is the remaining work.**
 
 ---
 
-## Phase 2: Refactor Existing Systems
+## ~~Phase 1: Query Infrastructure~~ ✓ Done
 
-Remove hardcoded entity ID params. Each system queries for what it needs internally.
+### ~~1.1 Entity query helper~~ ✓ Done
 
-### 2.1 Systems to refactor
+`entitiesWith()` lives in `ecs/query.ts`. Signature fix needed (see Known Issues below) — the current `...keys: K[]` variadic form allows zero arguments; should require at least one:
 
-| System | Currently receives | After refactor |
-|--------|-------------------|----------------|
-| `updateMovement` | `playerEntityId, canvas, playerState` | Queries `entitiesWith('playerTag', 'position', 'input')` |
-| `updatePhysics` | `playerEntityId, playerState, canvasHeight` | Queries `entitiesWith('playerTag', 'position')` |
-| `updatePlayerAnimation` | `playerEntityId, playerState` | Queries `entitiesWith('playerTag', 'sprite')` |
-| `updateBossAnimation` | `bossEntityId, bossState` | Queries `entitiesWith('enemyTag', 'sprite')` |
-| `updateScrolling` | `playerEntityId, canvas, scrollState, bgImage` | Queries `entitiesWith('playerTag', 'position')` |
-| `spawnProjectile` | `playerEntityId, template, facingRight` | Queries `entitiesWith('playerTag', 'position')` |
-| `renderer` | `gameCtx (carries entity IDs)` | Queries as needed |
+```ts
+function entitiesWith<K extends keyof ComponentStores>(
+  first: K,
+  ...rest: K[]
+): EntityId[]
+```
 
-### 2.2 Clean up GameContext
+### ~~1.2 Tag components~~ ✓ Done
 
-Remove `playerEntityId` and `bossEntityId` from `GameContext` in `types.ts`. Systems no longer need them passed in.
+`PlayerTag` and `EnemyTag` are in `components.ts`; stores are in `stores.ts`.
 
-### 2.3 Clean up PlayerState
+### ~~1.3 Attach tags during entity creation~~ ✓ Done
 
-`PlayerState` holds physics state (`velocityY`, `isOnGround`) that arguably belongs in components (Velocity already has `y`). However, this refactor is optional and can be deferred — the immediate goal is removing hardcoded entity IDs from system signatures, not restructuring all state.
+Both `createAssetPackPlayer()` and the boss creation in `loadEntities()` attach their respective tags.
 
-### Files touched
-- `src/systems/movement.ts`
-- `src/systems/physics.ts`
-- `src/systems/player-animation.ts`
-- `src/systems/boss-animation.ts`
-- `src/systems/scrolling.ts`
-- `src/systems/projectile.ts`
-- `src/rendering/renderer.ts`
-- `src/types.ts` — trim GameContext
-- `src/game-loop.ts` — update system call sites
+---
+
+## ~~Phase 2: Refactor Existing Systems~~ ✓ Done
+
+All systems query internally. `GameContext` no longer carries entity IDs.
 
 ---
 
@@ -90,29 +57,45 @@ Remove `playerEntityId` and `bossEntityId` from `GameContext` in `types.ts`. Sys
 
 ### 3.1 Collider component
 
+Add both `layer` (what this entity _is_) and `mask` (what layers this entity _collides against_) to make the interaction matrix data-driven rather than hardcoded in the collision system:
+
 ```ts
 export type Collider = Record<EntityId, {
   width: number;
   height: number;
   offsetX: number;  // offset from position for hitbox tuning
   offsetY: number;
-  layer: number;    // bitmask for collision filtering
+  layer: number;    // bitmask: what this entity is
+  mask: number;     // bitmask: what layers this entity collides with
 }>;
 ```
 
-Collision layers (bitmask):
+Collision layers and masks in `config.ts`:
+
 ```ts
-const COLLISION_LAYER = {
+export const COLLISION_LAYER = {
   PLAYER:     1 << 0,  // 0b001
   ENEMY:      1 << 1,  // 0b010
   PROJECTILE: 1 << 2,  // 0b100
 } as const;
+
+// Masks declare what each layer collides against
+export const COLLISION_MASK = {
+  PLAYER:     COLLISION_LAYER.ENEMY,
+  ENEMY:      COLLISION_LAYER.PLAYER | COLLISION_LAYER.PROJECTILE,
+  PROJECTILE: COLLISION_LAYER.ENEMY,
+} as const;
 ```
 
-Collision matrix (which layers interact):
-- PROJECTILE <-> ENEMY (donuts hit boss)
-- PLAYER <-> ENEMY (player takes damage from boss)
-- PLAYER !<-> PROJECTILE (player's own projectiles don't hit them)
+Pair compatibility check in the collision system:
+
+```ts
+const compatible =
+  (a.layer & b.mask) !== 0 ||
+  (b.layer & a.mask) !== 0;
+```
+
+This means adding a new interaction (e.g. friendly-fire) is a mask change in config, not a code change in the collision system.
 
 ### 3.2 CollisionEvents component
 
@@ -126,51 +109,83 @@ Stores per-frame collision results. Cleared at the start of each collision updat
 
 ### 3.3 Collision system (`systems/collision.ts`)
 
+Extract the AABB test as a pure, standalone function so it can be unit-tested without any store dependency:
+
+```ts
+export interface Rect {
+  left: number;
+  right: number;
+  top: number;
+  bottom: number;
+}
+
+export function aabbOverlap(a: Rect, b: Rect): boolean {
+  return a.left < b.right && a.right > b.left &&
+         a.top  < b.bottom && a.bottom > b.top;
+}
+```
+
+The system itself:
+
 ```ts
 function updateCollision(): void {
   // 1. Clear previous frame's events
   // 2. Get all entities with Position + Collider
-  // 3. For each pair, check layer compatibility
-  // 4. AABB overlap test
+  // 3. For each pair, check mask/layer compatibility
+  // 4. aabbOverlap test
   // 5. Write results into CollisionEvents
 }
 ```
 
-AABB test:
-```
-overlap = A.left < B.right && A.right > B.left &&
-          A.top  < B.bottom && A.bottom > B.top
-```
+Where bounds are: `position.x + collider.offsetX`, `position.y + collider.offsetY`, `+ width/height`.
 
-Where bounds are derived from Position + Collider offset + Collider size.
+### 3.4 Inactive projectile policy
 
-### 3.4 Attach colliders to entities
+Projectiles are pooled: on deactivation, `projectile[id].active` is set to `false` but the entity's components remain. If a `Collider` component is left attached, `entitiesWith('position', 'collider')` will still return inactive projectiles and they will participate in collision checks.
+
+**Policy: remove and restore the collider component alongside deactivation.**
+
+In `spawnProjectile`: add `collider[projEntityId] = { ..., layer: COLLISION_LAYER.PROJECTILE, mask: COLLISION_MASK.PROJECTILE }`.
+
+In `updateProjectiles` (the out-of-bounds deactivation path) and in `updateProjectileHits` (the hit deactivation path): `delete collider[projEntityId]` before returning to pool.
+
+This keeps `entitiesWith('collider')` as the clean source of truth for active collision participants.
+
+### 3.5 Attach colliders to entities
 
 In `ecs/entities.ts`, during creation:
-- Player gets `Collider` with `layer: PLAYER`, sized to sprite hitbox
-- Boss gets `Collider` with `layer: ENEMY`
-- Projectiles get `Collider` with `layer: PROJECTILE` on spawn
+- Player gets `Collider` with `layer: COLLISION_LAYER.PLAYER`, `mask: COLLISION_MASK.PLAYER`, sized to sprite hitbox
+- Boss gets `Collider` with `layer: COLLISION_LAYER.ENEMY`, `mask: COLLISION_MASK.ENEMY`
+- Projectiles: collider attached on spawn, removed on deactivation (see 3.4)
 
 Collider sizes go in `config.ts` alongside existing sprite dimensions.
 
-### 3.5 Reaction systems
+### 3.6 Debug collider rendering
 
-**`updateProjectileHits`** — reads CollisionEvents for entities with `Projectile` component. If a projectile is colliding with an enemy: deactivate projectile, return to pool, apply damage/effect to enemy.
+Hitbox tuning requires visual feedback. This is a first-class deliverable of Phase 3, not an afterthought.
+
+Add a `DEBUG_COLLIDERS` flag to `config.ts`. When true, the renderer draws wireframe rects over each entity that has a `Collider` component, offset and sized correctly. Remove before shipping.
+
+### 3.7 Reaction systems
+
+**`updateProjectileHits`** — reads CollisionEvents for entities with `Projectile` component. If a projectile is colliding with an enemy: delete its collider, deactivate, return to pool, apply damage/effect to enemy.
 
 **`updatePlayerDamage`** (future) — reads CollisionEvents for entities with `PlayerTag`. If colliding with an enemy: trigger knockback, damage, invincibility frames, etc.
 
 ### Files touched
-- `src/components/components.ts` — Collider, CollisionEvents types
+- `src/components/components.ts` — Collider (with mask), CollisionEvents types
 - `src/ecs/stores.ts` — collider, collisionEvents stores
-- `src/systems/collision.ts` (new) — updateCollision
+- `src/ecs/query.ts` — fix zero-arg footgun (see Known Issues)
+- `src/systems/collision.ts` (new) — aabbOverlap (exported pure fn), updateCollision
 - `src/systems/projectile-hits.ts` (new) — updateProjectileHits
-- `src/ecs/entities.ts` — attach colliders
-- `src/config.ts` — collider sizes, collision layers
-- `src/game-loop.ts` — add collision + reaction systems to loop
+- `src/systems/projectile.ts` — attach collider on spawn, delete on deactivation
+- `src/ecs/entities.ts` — attach colliders to player and boss
+- `src/config.ts` — COLLISION_LAYER, COLLISION_MASK, collider sizes, DEBUG_COLLIDERS flag
+- `src/game-loop.ts` — add collision + reaction systems to loop; fix execution order (see below)
 
 ---
 
-## System Execution Order (after all phases)
+## System Execution Order (after Phase 3)
 
 ```
 joystickInput -> movement -> physics -> collision -> projectileHits -> playerDamage
@@ -179,10 +194,37 @@ joystickInput -> movement -> physics -> collision -> projectileHits -> playerDam
 
 Collision runs after movement/physics (positions are final for the frame), before animation/render (reactions can influence visuals).
 
+Note: the current loop runs `updatePlayerAnimation` between `updateMovement` and `updatePhysics`. This means animation state lags a frame behind physics. The order above fixes this as a side-effect of adding collision.
+
+---
+
+## Testing
+
+`aabbOverlap` is a pure function with no store dependency — it must have unit tests covering the overlap/no-overlap boundary cases.
+
+The global store pattern (module-level `const position: Position = {}`) causes test state to bleed between test files unless stores are cleared. Add a `resetStores()` function to `ecs/stores.ts` that clears all stores and resets the entity ID counter. Call it in `beforeEach` for any test that touches stores.
+
+Minimum test coverage for Phase 3:
+- `aabbOverlap` — all four non-overlap directions, exact-edge (touching but not overlapping), and clear overlap
+- `entitiesWith` — basic query, multi-key intersection, empty result
+- `updateCollision` — a player/boss pair that overlaps should produce CollisionEvents; a player/projectile pair should not (mask filtering)
+
+---
+
+## Known Issues in Existing Code
+
+**`entitiesWith()` zero-arg footgun** (`ecs/query.ts`): the current variadic signature `...keys: K[]` accepts zero arguments. Called with no args, `first` is `undefined` and `allStores[undefined]` throws at runtime. Fix the signature to require at least one key:
+
+```ts
+function entitiesWith<K extends keyof ComponentStores>(
+  first: K,
+  ...rest: K[]
+): EntityId[]
+```
+
 ---
 
 ## Notes
 
 - **No broad-phase needed** at current entity counts. If the game later has dozens of enemies or bullets, add spatial hashing then.
 - **PlayerState cleanup** (moving velocityY/isOnGround into components) is a natural follow-up but not required for collision to work.
-- **Debug rendering** — drawing collider outlines is valuable during development. Can be a simple flag that draws wireframe rects over entities with Collider components.
