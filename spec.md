@@ -48,6 +48,7 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 
 ### Medium Priority (architecture)
 - **ECS is hardcoded to specific entity IDs**: Systems receive `playerEntityId`/`bossEntityId` explicitly. Adding a second enemy requires changing function signatures. Systems should query entities by component, not by hardcoded ID.
+- **Global stores limit testability**: ECS stores are module-level singletons. Systems import them directly, making unit tests dependent on shared mutable state. The long-term fix is a `World` class that owns all stores and the entity counter, with systems accepting a `World` argument. Tests construct a fresh `World` per test and `entitiesWith` becomes `world.query(...)`. Short-term: a `resetStores()` utility in `ecs/stores.ts` clears all stores and resets the entity counter for use in `beforeEach`.
 
 ### Low Priority (animation)
 - **Sprite animation doesn't catch up after lag spikes**: `updateSpriteAnimation` subtracts one `frameDuration` per tick, so a large delta only advances one frame. The animation temporarily slows down instead of skipping ahead. Cosmetic-only impact.
