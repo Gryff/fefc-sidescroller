@@ -1,6 +1,8 @@
 import type {
+  EnemyTag,
   EntityId,
   Input,
+  PlayerTag,
   Position,
   Projectile,
   Sprite,
@@ -19,3 +21,5 @@ export const velocity: Velocity = {};
 export const input: Input = {};
 export const projectile: Projectile = {};
 export const projectilePool: EntityId[] = [];
+export const playerTag: PlayerTag = {};
+export const enemyTag: EnemyTag = {};

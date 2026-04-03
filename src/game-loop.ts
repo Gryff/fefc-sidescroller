@@ -20,25 +20,19 @@ function update(
   state: GameState,
   assets: GameAssets,
 ): void {
-  const { canvas, playerEntityId, bossEntityId, isTouchDevice } = gameCtx;
+  const { canvas, isTouchDevice } = gameCtx;
   const dt = delta / TARGET_FRAME_MS;
 
-  updateBossAnimation(bossEntityId, state.boss, delta);
-  applyJoystickInput(playerEntityId, state.joystick, isTouchDevice);
+  updateBossAnimation(state.boss, delta);
+  applyJoystickInput(state.joystick, isTouchDevice);
 
-  const prevPlayerX = updateMovement(playerEntityId, state.player, dt);
-  updatePlayerAnimation(playerEntityId, state.player, delta);
+  const prevPlayerX = updateMovement(state.player, dt);
+  updatePlayerAnimation(state.player, delta);
   // Note: updateSpriteAnimation takes raw delta (ms), not normalised dt,
   // because AnimationDef.frameDuration is specified in milliseconds.
-  updateSpriteAnimation(playerEntityId, delta);
-  updatePhysics(playerEntityId, state.player, canvas.height, dt);
-  updateScrolling(
-    playerEntityId,
-    state.scroll,
-    canvas,
-    assets.backgroundImage,
-    prevPlayerX,
-  );
+  updateSpriteAnimation(delta);
+  updatePhysics(state.player, canvas.height, dt);
+  updateScrolling(state.scroll, canvas, assets.backgroundImage, prevPlayerX);
   updateProjectiles(canvas, dt);
 }
 

@@ -57,6 +57,9 @@ export type Projectile = Record<
   }
 >;
 
+export type PlayerTag = Record<EntityId, true>;
+export type EnemyTag = Record<EntityId, true>;
+
 export async function createSprite(
   imageSrc: string,
   frameWidth: number,

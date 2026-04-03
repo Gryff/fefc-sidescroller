@@ -9,8 +9,7 @@ import type { GameContext, GameState } from "./types";
 
 // Bootstrap
 const { canvas, ctx } = createCanvas();
-const { playerEntityId, bossEntityId, projectileSpriteTemplate } =
-  await loadEntities(canvas);
+const { projectileSpriteTemplate } = await loadEntities(canvas);
 
 const isTouchDevice = detectTouchDevice();
 
@@ -36,15 +35,13 @@ const state: GameState = {
 const gameCtx: GameContext = {
   canvas,
   ctx,
-  playerEntityId,
-  bossEntityId,
   projectileSpriteTemplate,
   isTouchDevice,
 };
 
 // Input
-setupKeyboardInput(playerEntityId, state.player, () =>
-  spawnProjectile(playerEntityId, projectileSpriteTemplate, state.player.facingRight),
+setupKeyboardInput(state.player, () =>
+  spawnProjectile(projectileSpriteTemplate, state.player.facingRight),
 );
 
 if (isTouchDevice) {

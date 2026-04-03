@@ -1,7 +1,7 @@
-import type { EntityId } from "../components/components";
-import type { PlayerState } from "../types";
 import { CHARACTER_ANIMATIONS } from "../config";
+import { entitiesWith } from "../ecs/query";
 import { sprite } from "../ecs/stores";
+import type { PlayerState } from "../types";
 import { setAnimation } from "./sprite-animation";
 
 const ATTACK_DURATION =
@@ -9,10 +9,12 @@ const ATTACK_DURATION =
   CHARACTER_ANIMATIONS.attack.frameDuration;
 
 export function updatePlayerAnimation(
-  playerEntityId: EntityId,
   playerState: PlayerState,
   delta: number,
 ): void {
+  const [playerEntityId] = entitiesWith("playerTag", "sprite");
+  if (playerEntityId === undefined) return;
+
   const s = sprite[playerEntityId];
 
   // Tick attack timer

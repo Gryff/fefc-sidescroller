@@ -1,4 +1,4 @@
-import type { EntityId, Sprite } from "./components/components";
+import type { Sprite } from "./components/components";
 
 export interface PlayerState {
   velocityY: number;
@@ -27,8 +27,6 @@ export interface JoystickState {
 export interface GameContext {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
-  playerEntityId: EntityId;
-  bossEntityId: EntityId;
   projectileSpriteTemplate: Sprite[number];
   isTouchDevice: boolean;
 }

@@ -1,5 +1,6 @@
 import type { EntityId, Sprite } from "../components/components";
 import { PROJECTILE } from "../config";
+import { entitiesWith } from "../ecs/query";
 import {
   createEntity,
   position,
@@ -10,10 +11,12 @@ import {
 } from "../ecs/stores";
 
 export function spawnProjectile(
-  playerEntityId: EntityId,
   template: Sprite[number],
   facingRight: boolean,
 ): void {
+  const [playerEntityId] = entitiesWith("playerTag", "position");
+  if (playerEntityId === undefined) return;
+
   let projEntityId: EntityId;
   if (projectilePool.length > 0) {
     projEntityId = projectilePool.pop()!;
