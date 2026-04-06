@@ -1,7 +1,14 @@
 import type { Sprite } from "../components/components";
 import { createAnimatedSprite, createSprite } from "../components/components";
-import { CHARACTER_ANIMATIONS, groundLevel } from "../config";
 import {
+  CHARACTER_ANIMATIONS,
+  COLLIDER_SIZE,
+  COLLISION_LAYER,
+  COLLISION_MASK,
+  groundLevel,
+} from "../config";
+import {
+  collider,
   createEntity,
   enemyTag,
   input,
@@ -31,6 +38,11 @@ export async function loadEntities(
   };
   velocity[bossEntityId] = { x: 0, y: 0 };
   enemyTag[bossEntityId] = true;
+  collider[bossEntityId] = {
+    ...COLLIDER_SIZE.BOSS,
+    layer: COLLISION_LAYER.ENEMY,
+    mask: COLLISION_MASK.ENEMY,
+  };
 
   return { projectileSpriteTemplate };
 }
@@ -59,4 +71,9 @@ export async function createAssetPackPlayer(
   };
   velocity[entityId] = { x: 0, y: 0 };
   playerTag[entityId] = true;
+  collider[entityId] = {
+    ...COLLIDER_SIZE.PLAYER,
+    layer: COLLISION_LAYER.PLAYER,
+    mask: COLLISION_MASK.PLAYER,
+  };
 }

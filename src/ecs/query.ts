@@ -1,5 +1,7 @@
 import type { EntityId } from "../components/components";
 import {
+  collider,
+  collisionEvents,
   enemyTag,
   input,
   playerTag,
@@ -9,7 +11,7 @@ import {
   velocity,
 } from "./stores";
 
-type ComponentStores = {
+export type ComponentStores = {
   sprite: typeof sprite;
   position: typeof position;
   velocity: typeof velocity;
@@ -17,6 +19,8 @@ type ComponentStores = {
   projectile: typeof projectile;
   playerTag: typeof playerTag;
   enemyTag: typeof enemyTag;
+  collider: typeof collider;
+  collisionEvents: typeof collisionEvents;
 };
 
 const allStores: ComponentStores = {
@@ -27,12 +31,14 @@ const allStores: ComponentStores = {
   projectile,
   playerTag,
   enemyTag,
+  collider,
+  collisionEvents,
 };
 
 export function entitiesWith<K extends keyof ComponentStores>(
-  ...keys: K[]
+  first: K,
+  ...rest: K[]
 ): EntityId[] {
-  const [first, ...rest] = keys;
   const firstStore = allStores[first] as Record<number, unknown>;
   return Object.keys(firstStore)
     .map(Number)

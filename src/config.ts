@@ -51,6 +51,26 @@ export const BACKGROUND = {
   sourceWidthDivisor: 3,
 } as const;
 
+export const COLLISION_LAYER = {
+  PLAYER: 1 << 0, // 0b001
+  ENEMY: 1 << 1, // 0b010
+  PROJECTILE: 1 << 2, // 0b100
+} as const;
+
+export const COLLISION_MASK = {
+  PLAYER: COLLISION_LAYER.ENEMY,
+  ENEMY: COLLISION_LAYER.PLAYER | COLLISION_LAYER.PROJECTILE,
+  PROJECTILE: COLLISION_LAYER.ENEMY,
+} as const;
+
+export const COLLIDER_SIZE = {
+  PLAYER: { width: 40, height: 50, offsetX: 0, offsetY: 7 },
+  BOSS: { width: 60, height: 100, offsetX: 0, offsetY: 14 },
+  PROJECTILE: { width: 32, height: 32, offsetX: 0, offsetY: 0 },
+} as const;
+
+export const DEBUG_COLLIDERS = false;
+
 export function groundLevel(canvasHeight: number): number {
   return canvasHeight - PHYSICS.groundOffset;
 }
