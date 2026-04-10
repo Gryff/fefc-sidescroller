@@ -60,6 +60,25 @@ export type Projectile = Record<
 export type PlayerTag = Record<EntityId, true>;
 export type EnemyTag = Record<EntityId, true>;
 
+export type Collider = Record<
+  EntityId,
+  {
+    width: number;
+    height: number;
+    offsetX: number;
+    offsetY: number;
+    layer: number;
+    mask: number;
+  }
+>;
+
+export type CollisionEvents = Record<
+  EntityId,
+  {
+    collidingWith: EntityId[];
+  }
+>;
+
 export async function createSprite(
   imageSrc: string,
   frameWidth: number,

@@ -2,9 +2,11 @@ import type { GameAssets, GameContext, GameState } from "./types";
 import { applyJoystickInput } from "./input/touch";
 import { render } from "./rendering/renderer";
 import { updateBossAnimation } from "./systems/boss-animation";
+import { updateCollision } from "./systems/collision";
 import { updateMovement } from "./systems/movement";
 import { updatePlayerAnimation } from "./systems/player-animation";
 import { updatePhysics } from "./systems/physics";
+import { updateProjectileHits } from "./systems/projectile-hits";
 import { updateSpriteAnimation } from "./systems/sprite-animation";
 import { updateProjectiles } from "./systems/projectile";
 import { updateScrolling } from "./systems/scrolling";
@@ -23,17 +25,27 @@ function update(
   const { canvas, isTouchDevice } = gameCtx;
   const dt = delta / TARGET_FRAME_MS;
 
-  updateBossAnimation(state.boss, delta);
+  // Input
   applyJoystickInput(state.joystick, isTouchDevice);
 
+  // Movement & physics
   const prevPlayerX = updateMovement(state.player, dt);
+  updatePhysics(state.player, canvas.height, dt);
+  updateProjectiles(canvas, dt);
+
+  // Collision detection & reactions
+  updateCollision();
+  updateProjectileHits();
+
+  // Animation
   updatePlayerAnimation(state.player, delta);
+  updateBossAnimation(state.boss, delta);
   // Note: updateSpriteAnimation takes raw delta (ms), not normalised dt,
   // because AnimationDef.frameDuration is specified in milliseconds.
   updateSpriteAnimation(delta);
-  updatePhysics(state.player, canvas.height, dt);
+
+  // Scrolling
   updateScrolling(state.scroll, canvas, assets.backgroundImage, prevPlayerX);
-  updateProjectiles(canvas, dt);
 }
 
 export function startGameLoop(

@@ -1,7 +1,8 @@
 import type { EntityId, Sprite } from "../components/components";
-import { PROJECTILE } from "../config";
+import { COLLIDER_SIZE, COLLISION_LAYER, COLLISION_MASK, PROJECTILE } from "../config";
 import { entitiesWith } from "../ecs/query";
 import {
+  collider,
   createEntity,
   position,
   projectile,
@@ -35,6 +36,11 @@ export function spawnProjectile(
       y: 0,
     };
     projectile[projEntityId] = { active: true };
+    collider[projEntityId] = {
+      ...COLLIDER_SIZE.PROJECTILE,
+      layer: COLLISION_LAYER.PROJECTILE,
+      mask: COLLISION_MASK.PROJECTILE,
+    };
   }
 }
 
@@ -51,6 +57,7 @@ export function updateProjectiles(canvas: HTMLCanvasElement, dt: number): void {
           position[projId].y < 0 ||
           position[projId].y > canvas.height
         ) {
+          delete collider[Number(projId)];
           projectile[projId].active = false;
           projectilePool.push(Number(projId));
         }

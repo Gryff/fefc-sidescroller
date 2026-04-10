@@ -1,8 +1,8 @@
 import type { EntityId } from "../components/components";
-import { BACKGROUND, JOYSTICK } from "../config";
+import { BACKGROUND, DEBUG_COLLIDERS, JOYSTICK } from "../config";
 import { entitiesWith } from "../ecs/query";
 import type { GameAssets, GameContext, GameState } from "../types";
-import { position, projectile, sprite } from "../ecs/stores";
+import { collider, position, projectile, sprite } from "../ecs/stores";
 
 function drawSprite(
   ctx: CanvasRenderingContext2D,
@@ -84,6 +84,21 @@ export function render(
     if (projectile[projId] && projectile[projId].active) {
       drawSprite(ctx, Number(projId));
     }
+  }
+
+  // Debug collider wireframes
+  if (DEBUG_COLLIDERS) {
+    ctx.save();
+    ctx.strokeStyle = "lime";
+    ctx.lineWidth = 2;
+    for (const id of entitiesWith("position", "collider")) {
+      const pos = position[id];
+      const col = collider[id];
+      const left = pos.x + col.offsetX - col.width / 2;
+      const top = pos.y + col.offsetY - col.height / 2;
+      ctx.strokeRect(left, top, col.width, col.height);
+    }
+    ctx.restore();
   }
 
   // Joystick UI
