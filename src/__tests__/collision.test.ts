@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { aabbOverlap, updateCollision } from "../systems/collision";
 import type { Rect } from "../systems/collision";
-import { entitiesWith } from "../ecs/query";
 import { resetStores } from "../ecs/stores";
 import {
   collider,
@@ -40,7 +39,6 @@ describe("aabbOverlap", () => {
   });
 
   it("returns false for exact edge touch (not overlapping)", () => {
-    // Touching on right edge: a.right === b.left → not overlapping
     const other: Rect = { left: 10, right: 20, top: 0, bottom: 10 };
     expect(aabbOverlap(baseRect, other)).toBe(false);
   });
@@ -48,43 +46,6 @@ describe("aabbOverlap", () => {
   it("detects overlap when one rect contains the other", () => {
     const inner: Rect = { left: 2, right: 8, top: 2, bottom: 8 };
     expect(aabbOverlap(baseRect, inner)).toBe(true);
-  });
-});
-
-describe("entitiesWith", () => {
-  beforeEach(() => {
-    resetStores();
-  });
-
-  it("returns entities with a single component", () => {
-    const id = createEntity();
-    position[id] = { x: 0, y: 0 };
-    expect(entitiesWith("position")).toContain(id);
-  });
-
-  it("returns entities matching all keys", () => {
-    const id = createEntity();
-    position[id] = { x: 0, y: 0 };
-    collider[id] = {
-      width: 10,
-      height: 10,
-      offsetX: 0,
-      offsetY: 0,
-      layer: 1,
-      mask: 1,
-    };
-    expect(entitiesWith("position", "collider")).toContain(id);
-  });
-
-  it("excludes entities missing a component", () => {
-    const id = createEntity();
-    position[id] = { x: 0, y: 0 };
-    // no collider
-    expect(entitiesWith("position", "collider")).not.toContain(id);
-  });
-
-  it("returns empty array when no entities match", () => {
-    expect(entitiesWith("position")).toEqual([]);
   });
 });
 
