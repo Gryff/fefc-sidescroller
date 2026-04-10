@@ -1,5 +1,5 @@
 import type { EntityId } from "../components/components";
-import { BACKGROUND, DEBUG_COLLIDERS, JOYSTICK } from "../config";
+import { BACKGROUND, DEBUG_COLLIDERS, FIRE_BUTTON, JOYSTICK } from "../config";
 import { entitiesWith } from "../ecs/query";
 import type { GameAssets, GameContext, GameState } from "../types";
 import { collider, position, projectile, sprite } from "../ecs/stores";
@@ -112,5 +112,29 @@ export function render(
       JOYSTICK.size,
     );
     ctx.globalAlpha = 1.0;
+  }
+
+  // Fire button UI
+  if (isTouchDevice) {
+    const centerX = canvas.width - FIRE_BUTTON.margin - FIRE_BUTTON.size / 2;
+    const centerY = canvas.height - FIRE_BUTTON.margin - FIRE_BUTTON.size / 2;
+    const radius = FIRE_BUTTON.size / 2;
+    ctx.save();
+    ctx.globalAlpha = state.fireButton.active
+      ? FIRE_BUTTON.opacity * 0.5
+      : FIRE_BUTTON.opacity;
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+    ctx.fillStyle = "#ff4444";
+    ctx.fill();
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 20px sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("FIRE", centerX, centerY);
+    ctx.restore();
   }
 }

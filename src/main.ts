@@ -29,6 +29,10 @@ const state: GameState = {
     active: false,
     dir: { left: false, right: false, up: false },
   },
+  fireButton: {
+    touchId: null,
+    active: false,
+  },
   gameRunning: true,
 };
 
@@ -45,7 +49,9 @@ setupKeyboardInput(state.player, () =>
 );
 
 if (isTouchDevice) {
-  setupTouchInput(canvas, state.joystick);
+  setupTouchInput(canvas, state.joystick, state.fireButton, state.player, () =>
+    spawnProjectile(projectileSpriteTemplate, state.player.facingRight),
+  );
 }
 
 // Load assets and start
