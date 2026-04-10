@@ -24,6 +24,11 @@ export interface JoystickState {
   dir: { left: boolean; right: boolean; up: boolean };
 }
 
+export interface FireButtonState {
+  touchId: number | null;
+  active: boolean;
+}
+
 export interface GameContext {
   canvas: HTMLCanvasElement;
   ctx: CanvasRenderingContext2D;
@@ -36,6 +41,7 @@ export interface GameState {
   boss: BossAnimState;
   scroll: ScrollState;
   joystick: JoystickState;
+  fireButton: FireButtonState;
   gameRunning: boolean;
 }
 

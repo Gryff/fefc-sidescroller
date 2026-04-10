@@ -41,6 +41,12 @@ export const JOYSTICK = {
   deadzone: 0.25,
 } as const;
 
+export const FIRE_BUTTON = {
+  size: 96,
+  margin: 32,
+  opacity: 0.8,
+} as const;
+
 export const SCROLL = {
   triggerRightFraction: 2 / 3,
   triggerLeftFraction: 1 / 3,
