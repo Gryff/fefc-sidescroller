@@ -5,7 +5,7 @@ import {
   COLLIDER_SIZE,
   COLLISION_LAYER,
   COLLISION_MASK,
-  groundLevel,
+  WORLD,
 } from "../config";
 import {
   collider,
@@ -18,10 +18,10 @@ import {
   velocity,
 } from "./stores";
 
-export async function loadEntities(
-  canvas: HTMLCanvasElement,
-): Promise<{ projectileSpriteTemplate: Sprite[number] }> {
-  await createAssetPackPlayer(canvas);
+export async function loadEntities(): Promise<{
+  projectileSpriteTemplate: Sprite[number];
+}> {
+  await createAssetPackPlayer();
   const bossEntityId = createEntity();
 
   const projectileSpriteTemplate = await createSprite("/sprites/donut.png", 48, 48, 1);
@@ -33,8 +33,8 @@ export async function loadEntities(
     2,
   );
   position[bossEntityId] = {
-    x: canvas.width / 1.5,
-    y: groundLevel(canvas.height),
+    x: 2800,
+    y: WORLD.groundY,
   };
   velocity[bossEntityId] = { x: 0, y: 0 };
   enemyTag[bossEntityId] = true;
@@ -47,9 +47,7 @@ export async function loadEntities(
   return { projectileSpriteTemplate };
 }
 
-export async function createAssetPackPlayer(
-  canvas: HTMLCanvasElement,
-): Promise<void> {
+export async function createAssetPackPlayer(): Promise<void> {
   const entityId = createEntity();
 
   sprite[entityId] = await createAnimatedSprite(
@@ -66,8 +64,8 @@ export async function createAssetPackPlayer(
   );
   input[entityId] = { left: false, right: false, up: false };
   position[entityId] = {
-    x: canvas.width / 2,
-    y: groundLevel(canvas.height),
+    x: 120,
+    y: WORLD.groundY,
   };
   velocity[entityId] = { x: 0, y: 0 };
   playerTag[entityId] = true;

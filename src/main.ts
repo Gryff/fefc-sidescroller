@@ -9,7 +9,7 @@ import type { GameContext, GameState } from "./types";
 
 // Bootstrap
 const { canvas, ctx } = createCanvas();
-const { projectileSpriteTemplate } = await loadEntities(canvas);
+const { projectileSpriteTemplate } = await loadEntities();
 
 const isTouchDevice = detectTouchDevice();
 
@@ -23,7 +23,7 @@ const state: GameState = {
     attackTimer: 0,
   },
   boss: { elapsed: 0, frame: 0 },
-  scroll: { backgroundOffsetX: 0 },
+  camera: { x: 0, worldWidth: 3200, groundY: 500 },
   joystick: {
     touchId: null,
     active: false,

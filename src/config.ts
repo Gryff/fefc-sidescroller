@@ -47,10 +47,9 @@ export const FIRE_BUTTON = {
   opacity: 0.8,
 } as const;
 
-export const SCROLL = {
-  triggerRightFraction: 2 / 3,
-  triggerLeftFraction: 1 / 3,
-  maxOffsetFraction: 2 / 3,
+export const WORLD = {
+  width: 3200,
+  groundY: 500,
 } as const;
 
 export const BACKGROUND = {
@@ -77,6 +76,3 @@ export const COLLIDER_SIZE = {
 
 export const DEBUG_COLLIDERS = false;
 
-export function groundLevel(canvasHeight: number): number {
-  return canvasHeight - PHYSICS.groundOffset;
-}

@@ -1,11 +1,11 @@
-import { PHYSICS, PLAYER, groundLevel } from "../config";
+import { PHYSICS, PLAYER } from "../config";
 import { entitiesWith } from "../ecs/query";
 import { input, position } from "../ecs/stores";
 import type { PlayerState } from "../types";
 
 export function updatePhysics(
   playerState: PlayerState,
-  canvasHeight: number,
+  groundY: number,
   dt: number,
 ): void {
   const [playerEntityId] = entitiesWith("playerTag", "position", "input");
@@ -22,9 +22,8 @@ export function updatePhysics(
   position[playerEntityId].y += playerState.velocityY * dt;
 
   // Ground collision
-  const ground = groundLevel(canvasHeight);
-  if (position[playerEntityId].y >= ground) {
-    position[playerEntityId].y = ground;
+  if (position[playerEntityId].y >= groundY) {
+    position[playerEntityId].y = groundY;
     playerState.velocityY = 0;
     playerState.isOnGround = true;
   }
