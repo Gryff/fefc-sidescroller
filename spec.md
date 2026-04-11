@@ -22,12 +22,12 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
   - Gravity pulls the player down, with ground collision detection.
 - ✅ Asset Loading: Game waits for all images to load before starting.
 - ✅ Framerate-independent game loop: Delta time is normalised to 60fps (dt=1.0 at 60fps). All movement, physics, and projectile systems scale by dt so behaviour is consistent at any refresh rate. Delta is capped at 100ms to prevent large position jumps after tab backgrounding.
+- ✅ Touch/Mobile Controls: Touch/joystick support for mobile gameplay.
+- ✅ Player Animation: Walking/jumping animations (frame-based or sprite sheet).
+- ✅ Collision Detection: Collisions with platforms, obstacles, and other entities.
 
 ### Not Done 🙅‍♂️
-- 🚧 Touch/Mobile Controls: Expand touch/joystick support for mobile gameplay.
 - 🙅‍♂️ Level Design: Add platforms, obstacles, and interactive elements. Support for multiple backgrounds or level layouts.
-- 🙅‍♂️ Player Animation: Add walking/jumping animations (frame-based or sprite sheet).
-- 🙅‍♂️ Collision Detection: Implement collisions with platforms, obstacles, and other entities.
 - 🙅‍♂️ Sound Effects & Music: Add audio feedback for actions and background music.
 - 🙅‍♂️ Score & Progression: Track player progress, collectibles, or score.
 - 🙅‍♂️ Game States: Add menus, pause, restart, and win/lose conditions.
@@ -47,7 +47,7 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 ## To Fix
 
 ### Medium Priority (architecture)
-- **ECS is hardcoded to specific entity IDs**: Systems receive `playerEntityId`/`bossEntityId` explicitly. Adding a second enemy requires changing function signatures. Systems should query entities by component, not by hardcoded ID.
+- ~~**ECS is hardcoded to specific entity IDs**~~: ✅ Fixed — systems now use `entitiesWith()` queries by component instead of hardcoded IDs.
 - **Global stores limit testability**: ECS stores are module-level singletons. Systems import them directly, making unit tests dependent on shared mutable state. The long-term fix is a `World` class that owns all stores and the entity counter, with systems accepting a `World` argument. Tests construct a fresh `World` per test and `entitiesWith` becomes `world.query(...)`. Short-term: a `resetStores()` utility in `ecs/stores.ts` clears all stores and resets the entity counter for use in `beforeEach`.
 
 ### Low Priority (animation)
