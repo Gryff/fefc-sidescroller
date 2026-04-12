@@ -49,7 +49,7 @@ export const FIRE_BUTTON = {
 
 export const WORLD = {
   width: 3200,
-  groundY: 200,
+  groundY: window.innerHeight - 200,
 } as const;
 
 export const BACKGROUND = {

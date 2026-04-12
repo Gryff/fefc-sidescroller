@@ -20,9 +20,12 @@ function drawSprite(
         spriteData.height
       : 0;
 
+  const scale = spriteData.scale ?? 1;
   const screenX = pos.x - cameraX;
-  const dx = screenX - spriteData.width / 2;
-  const dy = pos.y - spriteData.height / 2;
+  const drawWidth = spriteData.width * scale;
+  const drawHeight = spriteData.height * scale;
+  const dx = screenX - drawWidth / 2;
+  const dy = pos.y - drawHeight / 2;
   const { width, height } = spriteData;
 
   ctx.save();
@@ -34,12 +37,12 @@ function drawSprite(
     ctx.translate(-screenX, 0);
   }
 
-  ctx.drawImage(spriteData.image, sx, sy, width, height, dx, dy, width, height);
+  ctx.drawImage(spriteData.image, sx, sy, width, height, dx, dy, drawWidth, drawHeight);
 
   if (spriteData.layers) {
     for (const layer of spriteData.layers) {
       if (layer.complete) {
-        ctx.drawImage(layer, sx, sy, width, height, dx, dy, width, height);
+        ctx.drawImage(layer, sx, sy, width, height, dx, dy, drawWidth, drawHeight);
       }
     }
   }

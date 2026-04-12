@@ -50,7 +50,7 @@ export async function loadEntities(): Promise<{
 export async function createAssetPackPlayer(): Promise<void> {
   const entityId = createEntity();
 
-  sprite[entityId] = await createAnimatedSprite(
+  const playerSprite = await createAnimatedSprite(
     [
       "/assetpack/Character skin colors/Male Skin1.png",
       "/assetpack/Male Hair/Male Hair1.png",
@@ -62,6 +62,8 @@ export async function createAssetPackPlayer(): Promise<void> {
     CHARACTER_ANIMATIONS,
     "idle",
   );
+  playerSprite.scale = 2;
+  sprite[entityId] = playerSprite;
   input[entityId] = { left: false, right: false, up: false };
   position[entityId] = {
     x: 120,

@@ -22,6 +22,7 @@ export type Sprite = Record<
     animationElapsed?: number;
     layers?: HTMLImageElement[];
     flipX?: boolean;
+    scale?: number;
   }
 >;
 
