@@ -4,7 +4,6 @@ import {
   destroyEntity,
   enemyTag,
   health,
-  playerTag,
   projectile,
 } from "../ecs/stores";
 
