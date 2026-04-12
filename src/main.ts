@@ -1,4 +1,5 @@
 import { loadAssets } from "./assets";
+import { WORLD } from "./config";
 import { loadEntities } from "./ecs/entities";
 import { startGameLoop } from "./game-loop";
 import { setupKeyboardInput } from "./input/keyboard";
@@ -23,7 +24,7 @@ const state: GameState = {
     attackTimer: 0,
   },
   boss: { elapsed: 0, frame: 0 },
-  camera: { x: 0, worldWidth: 3200, groundY: 500 },
+  camera: { x: 0, worldWidth: WORLD.width },
   joystick: {
     touchId: null,
     active: false,

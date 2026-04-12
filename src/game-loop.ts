@@ -29,7 +29,7 @@ function update(
 
   // Movement & physics
   updateMovement(state.player, dt);
-  updatePhysics(state.player, state.camera.groundY, dt);
+  updatePhysics(state.player, dt);
   updateProjectiles(state.camera.x, canvas.width, dt);
 
   // Collision detection & reactions

@@ -33,7 +33,7 @@ export async function loadEntities(): Promise<{
     2,
   );
   position[bossEntityId] = {
-    x: 2800,
+    x: WORLD.width - 400,
     y: WORLD.groundY,
   };
   velocity[bossEntityId] = { x: 0, y: 0 };

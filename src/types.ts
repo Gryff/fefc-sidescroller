@@ -17,7 +17,6 @@ export interface BossAnimState {
 export interface CameraState {
   x: number;
   worldWidth: number;
-  groundY: number;
 }
 
 export interface JoystickState {
