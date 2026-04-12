@@ -4,11 +4,11 @@
 
 The game has a clean ECS architecture, but currently has **no real concept of a "level"**:
 
-- **No world coordinates** — everything is screen-relative. The "scrolling" system fakes it by shifting the background image offset and clamping the player to trigger zones.
+- ~~**No world coordinates** — everything is screen-relative. The "scrolling" system fakes it by shifting the background image offset and clamping the player to trigger zones.~~ ✅ World coordinates + camera system implemented.
 - **Ground is a flat line** — `canvasHeight - 200`, no platforms or terrain.
-- **No health/damage** — collisions are detected but have no consequence.
-- **One hardcoded boss** — placed at `canvas.width / 1.5` in screen coords.
-- **No world bounds** — the play area is effectively the canvas width.
+- ~~**No health/damage** — collisions are detected but have no consequence.~~ ✅ Health + damage system implemented.
+- ~~**One hardcoded boss** — placed at `canvas.width / 1.5` in screen coords.~~ ✅ Boss placed at `WORLD.width - 400` in world coords.
+- ~~**No world bounds** — the play area is effectively the canvas width.~~ ✅ `WORLD.width` (3200) with camera clamping.
 
 ---
 
@@ -31,7 +31,7 @@ Several new component stores are needed:
 
 | Component | Purpose |
 |---|---|
-| `Health` | `{ current: number, max: number }` for player + enemies + boss |
+| ~~`Health`~~ | ~~`{ current: number, max: number }` for player + enemies + boss~~ ✅ Done |
 | `Damage` | `{ amount: number, cooldown?: number }` for obstacles/enemies on contact |
 | `Solid` | Tag — blocks movement (platforms, walls) |
 | `Pickup` | `{ type: 'health' \| 'speed' \| 'damage', amount: number, duration?: number }` |
@@ -43,10 +43,10 @@ Several new component stores are needed:
 | System | What it does |
 |---|---|
 | `platform-collision` | Resolves solid entity overlaps — player lands on platforms, can't walk through walls |
-| `health-damage` | Applies damage from contact with enemies/obstacles, tracks invincibility frames |
+| ~~`health-damage`~~ | ~~Applies damage from contact with enemies/obstacles~~ ✅ Done (no invincibility frames yet) |
 | `pickup-collection` | Detects player overlap with pickups, applies effect, removes entity |
 | `enemy-ai` | Drives patrol behavior (walk back and forth within range) |
-| `camera` | Follows player through the world, replaces current `scrolling.ts` |
+| ~~`camera`~~ | ~~Follows player through the world, replaces current `scrolling.ts`~~ ✅ Done |
 | `level-loader` | Reads JSON, spawns all entities into ECS stores |
 
 ---
@@ -220,9 +220,9 @@ Platform collision is special — it needs to **resolve** overlaps (push entitie
 
 Build in layers, each one testable independently:
 
-1. **World coords + camera** — Replace scrolling system, make rendering camera-aware. Game looks the same but is now world-coordinate based.
+1. ~~**World coords + camera** — Replace scrolling system, make rendering camera-aware. Game looks the same but is now world-coordinate based.~~ ✅ Done
 2. **Level loader + platforms** — Load JSON, spawn platform entities, implement solid collision resolution. Player can now jump between platforms.
-3. **Health + damage system** — Add health to player and boss. Existing projectile hits now reduce boss HP. Contact damage from boss hurts player. HUD shows health.
+3. ~~**Health + damage system** — Add health to player and boss. Existing projectile hits now reduce boss HP. Contact damage from boss hurts player. HUD shows health.~~ ✅ Done
 4. **Enemies** — Walker enemies with patrol AI, spawned from level data. Take damage from projectiles, deal contact damage.
 5. **Obstacles** — Static hazards loaded from level data that deal damage.
 6. **Pickups** — Health and power-up items scattered through the level.
@@ -237,5 +237,5 @@ The core architecture is solid for this. These things don't need to change:
 - **ECS pattern** — sparse stores + systems + queries. New components/systems slot right in.
 - **Sprite/animation system** — works for any entity already.
 - **Input system** — untouched.
-- **Projectile system** — pool + spawn + hit detection. Just needs to reduce enemy HP instead of being a no-op.
+- **Projectile system** — pool + spawn + hit detection. Now reduces enemy HP via `health-damage` system.
 - **Game loop structure** — just more systems added to the `update()` call.
