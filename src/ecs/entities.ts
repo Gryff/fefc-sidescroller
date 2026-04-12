@@ -5,12 +5,14 @@ import {
   COLLIDER_SIZE,
   COLLISION_LAYER,
   COLLISION_MASK,
+  HEALTH,
   WORLD,
 } from "../config";
 import {
   collider,
   createEntity,
   enemyTag,
+  health,
   input,
   playerTag,
   position,
@@ -43,6 +45,7 @@ export async function loadEntities(): Promise<{
     layer: COLLISION_LAYER.ENEMY,
     mask: COLLISION_MASK.ENEMY,
   };
+  health[bossEntityId] = { ...HEALTH.BOSS };
 
   return { projectileSpriteTemplate };
 }
@@ -76,4 +79,5 @@ export async function createAssetPackPlayer(): Promise<void> {
     layer: COLLISION_LAYER.PLAYER,
     mask: COLLISION_MASK.PLAYER,
   };
+  health[entityId] = { ...HEALTH.PLAYER };
 }

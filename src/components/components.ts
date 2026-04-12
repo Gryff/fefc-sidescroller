@@ -80,6 +80,8 @@ export type CollisionEvents = Record<
   }
 >;
 
+export type Health = Record<EntityId, { current: number; max: number }>;
+
 export async function createSprite(
   imageSrc: string,
   frameWidth: number,

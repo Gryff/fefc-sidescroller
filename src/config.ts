@@ -74,5 +74,10 @@ export const COLLIDER_SIZE = {
   PROJECTILE: { width: 32, height: 32, offsetX: 0, offsetY: 0 },
 } as const;
 
+export const HEALTH = {
+  PLAYER: { current: 5, max: 5 },
+  BOSS: { current: 10, max: 10 },
+} as const;
+
 export const DEBUG_COLLIDERS = false;
 

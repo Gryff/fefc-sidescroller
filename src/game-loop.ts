@@ -9,6 +9,7 @@ import { updatePhysics } from "./systems/physics";
 import { updateProjectileHits } from "./systems/projectile-hits";
 import { updateSpriteAnimation } from "./systems/sprite-animation";
 import { updateProjectiles } from "./systems/projectile";
+import { updateHealthDamage } from "./systems/health-damage";
 import { updateCamera } from "./systems/camera";
 
 // Target frame duration for 60fps. dt=1.0 at 60fps, 0.5 at 120fps, 2.0 at 30fps.
@@ -35,6 +36,10 @@ function update(
   // Collision detection & reactions
   updateCollision();
   updateProjectileHits();
+  const { playerDied } = updateHealthDamage();
+  if (playerDied) {
+    state.gameRunning = false;
+  }
 
   // Animation
   updatePlayerAnimation(state.player, delta);

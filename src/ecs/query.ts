@@ -1,39 +1,7 @@
 import type { EntityId } from "../components/components";
-import {
-  collider,
-  collisionEvents,
-  enemyTag,
-  input,
-  playerTag,
-  position,
-  projectile,
-  sprite,
-  velocity,
-} from "./stores";
+import { allStores } from "./stores";
 
-export type ComponentStores = {
-  sprite: typeof sprite;
-  position: typeof position;
-  velocity: typeof velocity;
-  input: typeof input;
-  projectile: typeof projectile;
-  playerTag: typeof playerTag;
-  enemyTag: typeof enemyTag;
-  collider: typeof collider;
-  collisionEvents: typeof collisionEvents;
-};
-
-const allStores: ComponentStores = {
-  sprite,
-  position,
-  velocity,
-  input,
-  projectile,
-  playerTag,
-  enemyTag,
-  collider,
-  collisionEvents,
-};
+export type ComponentStores = typeof allStores;
 
 export function entitiesWith<K extends keyof ComponentStores>(
   first: K,
