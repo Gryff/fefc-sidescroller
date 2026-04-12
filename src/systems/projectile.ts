@@ -44,7 +44,12 @@ export function spawnProjectile(
   }
 }
 
-export function updateProjectiles(canvas: HTMLCanvasElement, dt: number): void {
+export function updateProjectiles(
+  cameraX: number,
+  canvasWidth: number,
+  dt: number,
+): void {
+  const margin = 200;
   for (const projId in projectile) {
     if (projectile[projId] && projectile[projId].active) {
       if (position[projId] && velocity[projId]) {
@@ -52,10 +57,10 @@ export function updateProjectiles(canvas: HTMLCanvasElement, dt: number): void {
         position[projId].y += velocity[projId].y * dt;
 
         if (
-          position[projId].x < 0 ||
-          position[projId].x > canvas.width ||
-          position[projId].y < 0 ||
-          position[projId].y > canvas.height
+          position[projId].x < cameraX - margin ||
+          position[projId].x > cameraX + canvasWidth + margin ||
+          position[projId].y < -margin ||
+          position[projId].y > 1000
         ) {
           delete collider[Number(projId)];
           projectile[projId].active = false;

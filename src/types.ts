@@ -14,8 +14,9 @@ export interface BossAnimState {
   frame: number;
 }
 
-export interface ScrollState {
-  backgroundOffsetX: number;
+export interface CameraState {
+  x: number;
+  worldWidth: number;
 }
 
 export interface JoystickState {
@@ -39,7 +40,7 @@ export interface GameContext {
 export interface GameState {
   player: PlayerState;
   boss: BossAnimState;
-  scroll: ScrollState;
+  camera: CameraState;
   joystick: JoystickState;
   fireButton: FireButtonState;
   gameRunning: boolean;

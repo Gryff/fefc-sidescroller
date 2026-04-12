@@ -3,12 +3,9 @@ import { entitiesWith } from "../ecs/query";
 import { input, position } from "../ecs/stores";
 import type { PlayerState } from "../types";
 
-/** Updates player movement. Returns previous X for scrolling. */
-export function updateMovement(playerState: PlayerState, dt: number): number {
+export function updateMovement(playerState: PlayerState, dt: number): void {
   const [playerEntityId] = entitiesWith("playerTag", "position", "input");
-  if (playerEntityId === undefined) return 0;
-
-  const prevPlayerX = position[playerEntityId].x;
+  if (playerEntityId === undefined) return;
 
   playerState.isMoving = false;
 
@@ -22,6 +19,4 @@ export function updateMovement(playerState: PlayerState, dt: number): number {
     playerState.facingRight = true;
     playerState.isMoving = true;
   }
-
-  return prevPlayerX;
 }

@@ -270,8 +270,8 @@ position[playerId].x = Math.max(
 );
 ```
 
-This can live in the movement system or the camera system (after the follow
-logic, before clamping the camera).
+This lives in the camera system (before the follow logic, so the camera
+tracks the clamped position).
 
 ---
 

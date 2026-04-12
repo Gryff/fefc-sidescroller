@@ -9,7 +9,7 @@ import { updatePhysics } from "./systems/physics";
 import { updateProjectileHits } from "./systems/projectile-hits";
 import { updateSpriteAnimation } from "./systems/sprite-animation";
 import { updateProjectiles } from "./systems/projectile";
-import { updateScrolling } from "./systems/scrolling";
+import { updateCamera } from "./systems/camera";
 
 // Target frame duration for 60fps. dt=1.0 at 60fps, 0.5 at 120fps, 2.0 at 30fps.
 const TARGET_FRAME_MS = 1000 / 60;
@@ -20,7 +20,6 @@ function update(
   delta: number,
   gameCtx: GameContext,
   state: GameState,
-  assets: GameAssets,
 ): void {
   const { canvas, isTouchDevice } = gameCtx;
   const dt = delta / TARGET_FRAME_MS;
@@ -29,9 +28,9 @@ function update(
   applyJoystickInput(state.joystick, isTouchDevice);
 
   // Movement & physics
-  const prevPlayerX = updateMovement(state.player, dt);
-  updatePhysics(state.player, canvas.height, dt);
-  updateProjectiles(canvas, dt);
+  updateMovement(state.player, dt);
+  updatePhysics(state.player, dt);
+  updateProjectiles(state.camera.x, canvas.width, dt);
 
   // Collision detection & reactions
   updateCollision();
@@ -44,8 +43,8 @@ function update(
   // because AnimationDef.frameDuration is specified in milliseconds.
   updateSpriteAnimation(delta);
 
-  // Scrolling
-  updateScrolling(state.scroll, canvas, assets.backgroundImage, prevPlayerX);
+  // Camera
+  updateCamera(state.camera, canvas.width);
 }
 
 export function startGameLoop(
@@ -61,7 +60,7 @@ export function startGameLoop(
       const delta =
         lastTimestamp != null ? Math.min(ts - lastTimestamp, MAX_DELTA_MS) : 0;
 
-      update(delta, gameCtx, state, assets);
+      update(delta, gameCtx, state);
       render(gameCtx, state, assets);
 
       gameLoop(ts);

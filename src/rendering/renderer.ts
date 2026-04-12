@@ -7,6 +7,7 @@ import { collider, position, projectile, sprite } from "../ecs/stores";
 function drawSprite(
   ctx: CanvasRenderingContext2D,
   entityId: EntityId,
+  cameraX: number,
 ): void {
   const spriteData = sprite[entityId];
   const pos = position[entityId];
@@ -19,18 +20,18 @@ function drawSprite(
         spriteData.height
       : 0;
 
-  const dx = pos.x - spriteData.width / 2;
+  const screenX = pos.x - cameraX;
+  const dx = screenX - spriteData.width / 2;
   const dy = pos.y - spriteData.height / 2;
   const { width, height } = spriteData;
 
   ctx.save();
 
-  // Mirror horizontally around pos.x. This relies on dx being
-  // computed relative to pos.x so the sprite stays centred after the flip.
+  // Mirror horizontally around screen X so the sprite stays centred after the flip.
   if (spriteData.flipX) {
-    ctx.translate(pos.x, 0);
+    ctx.translate(screenX, 0);
     ctx.scale(-1, 1);
-    ctx.translate(-pos.x, 0);
+    ctx.translate(-screenX, 0);
   }
 
   ctx.drawImage(spriteData.image, sx, sy, width, height, dx, dy, width, height);
@@ -55,12 +56,17 @@ export function render(
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Background
+  // Background — parallax driven by camera position
   if (assets.backgroundImage.complete) {
     const sourceWidth = assets.backgroundImage.width / BACKGROUND.sourceWidthDivisor;
+    const maxSourceOffset = assets.backgroundImage.width - sourceWidth;
+    const maxCameraX = state.camera.worldWidth - canvas.width;
+    const backgroundSourceX = maxCameraX > 0
+      ? (state.camera.x / maxCameraX) * maxSourceOffset
+      : 0;
     ctx.drawImage(
       assets.backgroundImage,
-      state.scroll.backgroundOffsetX,
+      backgroundSourceX,
       0,
       sourceWidth,
       assets.backgroundImage.height,
@@ -72,17 +78,18 @@ export function render(
   }
 
   // Entities
+  const cameraX = state.camera.x;
   for (const id of entitiesWith("playerTag", "sprite")) {
-    drawSprite(ctx, id);
+    drawSprite(ctx, id, cameraX);
   }
   for (const id of entitiesWith("enemyTag", "sprite")) {
-    drawSprite(ctx, id);
+    drawSprite(ctx, id, cameraX);
   }
 
   // Projectiles
   for (const projId in projectile) {
     if (projectile[projId] && projectile[projId].active) {
-      drawSprite(ctx, Number(projId));
+      drawSprite(ctx, Number(projId), cameraX);
     }
   }
 
@@ -94,7 +101,7 @@ export function render(
     for (const id of entitiesWith("position", "collider")) {
       const pos = position[id];
       const col = collider[id];
-      const left = pos.x + col.offsetX - col.width / 2;
+      const left = (pos.x - cameraX) + col.offsetX - col.width / 2;
       const top = pos.y + col.offsetY - col.height / 2;
       ctx.strokeRect(left, top, col.width, col.height);
     }
