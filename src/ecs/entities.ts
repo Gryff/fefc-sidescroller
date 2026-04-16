@@ -73,12 +73,12 @@ function createPlatform(
 
 function spawnHardcodedPlatforms(): void {
   const groundY = WORLD.groundY;
-  createPlatform(500, groundY - 120, 200, 24);
-  createPlatform(850, groundY - 220, 160, 24);
-  createPlatform(1200, groundY - 160, 220, 24);
-  createPlatform(1600, groundY - 280, 140, 24);
-  createPlatform(2000, groundY - 140, 200, 24);
-  createPlatform(2450, groundY - 240, 180, 24);
+  createPlatform(500, groundY - 70, 200, 24);
+  createPlatform(850, groundY - 85, 160, 24);
+  createPlatform(1200, groundY - 60, 220, 24);
+  createPlatform(1600, groundY - 80, 140, 24);
+  createPlatform(2000, groundY - 70, 200, 24);
+  createPlatform(2450, groundY - 85, 180, 24);
 }
 
 export async function createAssetPackPlayer(): Promise<void> {
