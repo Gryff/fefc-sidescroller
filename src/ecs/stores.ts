@@ -3,11 +3,13 @@ import type {
   CollisionEvents,
   EnemyTag,
   EntityId,
+  Grounded,
   Health,
   Input,
   PlayerTag,
   Position,
   Projectile,
+  Solid,
   Sprite,
   Velocity,
 } from "../components/components";
@@ -29,6 +31,8 @@ export const enemyTag: EnemyTag = {};
 export const collider: Collider = {};
 export const collisionEvents: CollisionEvents = {};
 export const health: Health = {};
+export const solid: Solid = {};
+export const grounded: Grounded = {};
 
 export const allStores = {
   sprite,
@@ -41,6 +45,8 @@ export const allStores = {
   collider,
   collisionEvents,
   health,
+  solid,
+  grounded,
 };
 
 export function resetStores(): void {

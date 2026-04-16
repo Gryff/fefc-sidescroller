@@ -1,8 +1,6 @@
 import type { Sprite } from "./components/components";
 
 export interface PlayerState {
-  velocityY: number;
-  isOnGround: boolean;
   facingRight: boolean;
   isMoving: boolean;
   isAttacking: boolean;

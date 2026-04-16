@@ -60,6 +60,8 @@ export type Projectile = Record<
 
 export type PlayerTag = Record<EntityId, true>;
 export type EnemyTag = Record<EntityId, true>;
+export type Solid = Record<EntityId, true>;
+export type Grounded = Record<EntityId, true>;
 
 export type Collider = Record<
   EntityId,
