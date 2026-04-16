@@ -221,12 +221,38 @@ Platform collision is special — it needs to **resolve** overlaps (push entitie
 Build in layers, each one testable independently:
 
 1. ~~**World coords + camera** — Replace scrolling system, make rendering camera-aware. Game looks the same but is now world-coordinate based.~~ ✅ Done
-2. **Level loader + platforms** — Load JSON, spawn platform entities, implement solid collision resolution. Player can now jump between platforms.
-3. ~~**Health + damage system** — Add health to player and boss. Existing projectile hits now reduce boss HP. Contact damage from boss hurts player. HUD shows health.~~ ✅ Done
-4. **Enemies** — Walker enemies with patrol AI, spawned from level data. Take damage from projectiles, deal contact damage.
-5. **Obstacles** — Static hazards loaded from level data that deal damage.
-6. **Pickups** — Health and power-up items scattered through the level.
-7. **Level completion** — Boss death triggers win state.
+2. **Platforms** — Add `Solid` component, `PLATFORM` collision layer, and a `platform-collision` system that resolves overlaps directionally. Spawn a handful of hardcoded platforms in world space so the system can be developed and tested without a level loader. Player can now jump between platforms.
+3. **Level loader** — Read JSON, spawn platform entities from data. Replaces hardcoded platforms.
+4. ~~**Health + damage system** — Add health to player and boss. Existing projectile hits now reduce boss HP. Contact damage from boss hurts player. HUD shows health.~~ ✅ Done
+5. **Enemies** — Walker enemies with patrol AI, spawned from level data. Take damage from projectiles, deal contact damage.
+6. **Obstacles** — Static hazards loaded from level data that deal damage.
+7. **Pickups** — Health and power-up items scattered through the level.
+8. **Level completion** — Boss death triggers win state.
+
+---
+
+## Testing the Platform System
+
+Platform collision is the first system with a **resolution phase**, so it warrants thorough unit tests. Use the existing vitest pattern (see `src/__tests__/collision.test.ts`): reset stores, create entities, invoke the system directly, assert on store state.
+
+### `platform-collision.test.ts` cases
+
+1. **Land from above** — falling entity overlapping platform top snaps to platform top, `velocity.y` zeros, `isOnGround = true`.
+2. **No-op when clear** — entity resting above platform with no overlap is not moved.
+3. **Bonk from below** — rising entity overlapping platform bottom snaps down, upward `velocity.y` is cancelled.
+4. **Block from left** — entity moving right into platform side snaps to platform's left edge, `velocity.x` zeros.
+5. **Block from right** — mirror of #4.
+6. **Shallowest-axis resolution** — corner overlap resolves along the axis with smaller penetration (standard MTV behavior).
+7. **Mask filtering** — entities not masked against `PLATFORM` (e.g. projectiles) pass through; no resolution applied.
+8. **Multiple platforms** — entity falling through a gap between stacked platforms lands on the higher one.
+9. **`isOnGround` clears** — entity walked off a platform edge is no longer grounded next tick.
+10. **Platforms are static** — platform position/velocity unchanged after resolution.
+
+### Out of scope for these tests
+
+- Rendering (colored rectangles) — visual, covered manually.
+- Level JSON loading — belongs to the level-loader step.
+- Config bitmask assertions — tautological; mask behavior is exercised end-to-end by cases #1 and #7.
 
 ---
 
