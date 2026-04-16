@@ -1,26 +1,36 @@
 import { PHYSICS, PLAYER, WORLD } from "../config";
 import { entitiesWith } from "../ecs/query";
-import { input, position } from "../ecs/stores";
-import type { PlayerState } from "../types";
+import { grounded, input, position, velocity } from "../ecs/stores";
 
-export function updatePhysics(playerState: PlayerState, dt: number): void {
-  const [playerEntityId] = entitiesWith("playerTag", "position", "input");
+export function updatePhysics(dt: number): void {
+  const [playerEntityId] = entitiesWith(
+    "playerTag",
+    "position",
+    "velocity",
+    "input",
+  );
   if (playerEntityId === undefined) return;
 
-  // Jump
-  if (input[playerEntityId].up && playerState.isOnGround) {
-    playerState.velocityY = PLAYER.jumpStrength;
-    playerState.isOnGround = false;
+  // Jump (reads grounded from previous frame)
+  if (input[playerEntityId].up && playerEntityId in grounded) {
+    velocity[playerEntityId].y = PLAYER.jumpStrength;
+    delete grounded[playerEntityId];
   }
 
-  // Gravity
-  playerState.velocityY += PHYSICS.gravity * dt;
-  position[playerEntityId].y += playerState.velocityY * dt;
+  // Gravity + integrate
+  velocity[playerEntityId].y += PHYSICS.gravity * dt;
+  position[playerEntityId].y += velocity[playerEntityId].y * dt;
+}
 
-  // Ground collision
+// Runs after platform-collision so world ground can re-assert grounded for
+// entities that cleared their flag during platform resolution.
+export function resolveWorldGround(): void {
+  const [playerEntityId] = entitiesWith("playerTag", "position", "velocity");
+  if (playerEntityId === undefined) return;
+
   if (position[playerEntityId].y >= WORLD.groundY) {
     position[playerEntityId].y = WORLD.groundY;
-    playerState.velocityY = 0;
-    playerState.isOnGround = true;
+    velocity[playerEntityId].y = 0;
+    grounded[playerEntityId] = true;
   }
 }

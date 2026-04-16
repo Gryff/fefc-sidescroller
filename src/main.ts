@@ -16,8 +16,6 @@ const isTouchDevice = detectTouchDevice();
 
 const state: GameState = {
   player: {
-    velocityY: 0,
-    isOnGround: true,
     facingRight: false,
     isMoving: false,
     isAttacking: false,

@@ -1,6 +1,6 @@
 import { CHARACTER_ANIMATIONS } from "../config";
 import { entitiesWith } from "../ecs/query";
-import { sprite } from "../ecs/stores";
+import { grounded, sprite, velocity } from "../ecs/stores";
 import type { PlayerState } from "../types";
 import { setAnimation } from "./sprite-animation";
 
@@ -12,10 +12,12 @@ export function updatePlayerAnimation(
   playerState: PlayerState,
   delta: number,
 ): void {
-  const [playerEntityId] = entitiesWith("playerTag", "sprite");
+  const [playerEntityId] = entitiesWith("playerTag", "sprite", "velocity");
   if (playerEntityId === undefined) return;
 
   const s = sprite[playerEntityId];
+  const vy = velocity[playerEntityId].y;
+  const onGround = playerEntityId in grounded;
 
   // Tick attack timer
   if (playerState.isAttacking) {
@@ -31,9 +33,9 @@ export function updatePlayerAnimation(
     let animName: string;
     if (playerState.isAttacking) {
       animName = "attack";
-    } else if (!playerState.isOnGround && playerState.velocityY < 0) {
+    } else if (!onGround && vy < 0) {
       animName = "jump";
-    } else if (!playerState.isOnGround && playerState.velocityY >= 0) {
+    } else if (!onGround && vy >= 0) {
       animName = "fall";
     } else if (playerState.isMoving) {
       animName = "walk";

@@ -16,6 +16,7 @@ import {
   input,
   playerTag,
   position,
+  solid,
   sprite,
   velocity,
 } from "./stores";
@@ -24,6 +25,7 @@ export async function loadEntities(): Promise<{
   projectileSpriteTemplate: Sprite[number];
 }> {
   await createAssetPackPlayer();
+  spawnHardcodedPlatforms();
   const bossEntityId = createEntity();
 
   const projectileSpriteTemplate = await createSprite("/sprites/donut.png", 48, 48, 1);
@@ -48,6 +50,35 @@ export async function loadEntities(): Promise<{
   health[bossEntityId] = { ...HEALTH.BOSS };
 
   return { projectileSpriteTemplate };
+}
+
+function createPlatform(
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+): void {
+  const id = createEntity();
+  position[id] = { x, y };
+  collider[id] = {
+    width,
+    height,
+    offsetX: 0,
+    offsetY: 0,
+    layer: COLLISION_LAYER.PLATFORM,
+    mask: COLLISION_MASK.PLATFORM,
+  };
+  solid[id] = true;
+}
+
+function spawnHardcodedPlatforms(): void {
+  const groundY = WORLD.groundY;
+  createPlatform(500, groundY - 120, 200, 24);
+  createPlatform(850, groundY - 220, 160, 24);
+  createPlatform(1200, groundY - 160, 220, 24);
+  createPlatform(1600, groundY - 280, 140, 24);
+  createPlatform(2000, groundY - 140, 200, 24);
+  createPlatform(2450, groundY - 240, 180, 24);
 }
 
 export async function createAssetPackPlayer(): Promise<void> {

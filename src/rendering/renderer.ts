@@ -82,6 +82,22 @@ export function render(
 
   // Entities
   const cameraX = state.camera.x;
+
+  // Platforms (colored rects)
+  ctx.save();
+  ctx.fillStyle = "#6b4423";
+  ctx.strokeStyle = "#3d2613";
+  ctx.lineWidth = 2;
+  for (const id of entitiesWith("solid", "position", "collider")) {
+    const p = position[id];
+    const c = collider[id];
+    const x = p.x + c.offsetX - c.width / 2 - cameraX;
+    const y = p.y + c.offsetY - c.height / 2;
+    ctx.fillRect(x, y, c.width, c.height);
+    ctx.strokeRect(x, y, c.width, c.height);
+  }
+  ctx.restore();
+
   for (const id of entitiesWith("playerTag", "sprite")) {
     drawSprite(ctx, id, cameraX);
   }

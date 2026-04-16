@@ -4,8 +4,9 @@ import { render } from "./rendering/renderer";
 import { updateBossAnimation } from "./systems/boss-animation";
 import { updateCollision } from "./systems/collision";
 import { updateMovement } from "./systems/movement";
+import { updatePlatformCollision } from "./systems/platform-collision";
 import { updatePlayerAnimation } from "./systems/player-animation";
-import { updatePhysics } from "./systems/physics";
+import { resolveWorldGround, updatePhysics } from "./systems/physics";
 import { updateProjectileHits } from "./systems/projectile-hits";
 import { updateSpriteAnimation } from "./systems/sprite-animation";
 import { updateProjectiles } from "./systems/projectile";
@@ -30,7 +31,9 @@ function update(
 
   // Movement & physics
   updateMovement(state.player, dt);
-  updatePhysics(state.player, dt);
+  updatePhysics(dt);
+  updatePlatformCollision();
+  resolveWorldGround();
   updateProjectiles(state.camera.x, canvas.width, dt);
 
   // Collision detection & reactions
