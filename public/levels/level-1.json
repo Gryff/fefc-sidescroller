@@ -1,0 +1,23 @@
+{
+  "name": "Level 1 - The Gauntlet",
+  "world": { "width": 3200 },
+  "playerSpawn": { "x": 120, "y": 0 },
+  "entities": [
+    { "type": "platform", "x": 500,  "y": -70, "width": 200, "height": 24 },
+    { "type": "platform", "x": 850,  "y": -85, "width": 160, "height": 24 },
+    { "type": "platform", "x": 1200, "y": -60, "width": 220, "height": 24 },
+    { "type": "platform", "x": 1600, "y": -80, "width": 140, "height": 24 },
+    { "type": "platform", "x": 2000, "y": -70, "width": 200, "height": 24 },
+    { "type": "platform", "x": 2450, "y": -85, "width": 180, "height": 24 },
+    {
+      "type": "boss",
+      "sprite": "/sprites/blackledge.png",
+      "x": 2800,
+      "y": 0,
+      "health": 10,
+      "spriteWidth": 96,
+      "spriteHeight": 128,
+      "frameCount": 2
+    }
+  ]
+}

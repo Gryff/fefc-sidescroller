@@ -1,4 +1,3 @@
-import type { Sprite } from "../components/components";
 import { createAnimatedSprite, createSprite } from "../components/components";
 import {
   CHARACTER_ANIMATIONS,
@@ -6,7 +5,6 @@ import {
   COLLISION_LAYER,
   COLLISION_MASK,
   HEALTH,
-  WORLD,
 } from "../config";
 import {
   collider,
@@ -21,38 +19,17 @@ import {
   velocity,
 } from "./stores";
 
-export async function loadEntities(): Promise<{
-  projectileSpriteTemplate: Sprite[number];
-}> {
-  await createAssetPackPlayer();
-  spawnHardcodedPlatforms();
-  const bossEntityId = createEntity();
-
-  const projectileSpriteTemplate = await createSprite("/sprites/donut.png", 48, 48, 1);
-
-  sprite[bossEntityId] = await createSprite(
-    "/sprites/blackledge.png",
-    96,
-    128,
-    2,
-  );
-  position[bossEntityId] = {
-    x: WORLD.width - 400,
-    y: WORLD.groundY,
-  };
-  velocity[bossEntityId] = { x: 0, y: 0 };
-  enemyTag[bossEntityId] = true;
-  collider[bossEntityId] = {
-    ...COLLIDER_SIZE.BOSS,
-    layer: COLLISION_LAYER.ENEMY,
-    mask: COLLISION_MASK.ENEMY,
-  };
-  health[bossEntityId] = { ...HEALTH.BOSS };
-
-  return { projectileSpriteTemplate };
+export interface BossConfig {
+  sprite: string;
+  x: number;
+  y: number;
+  health: number;
+  spriteWidth: number;
+  spriteHeight: number;
+  frameCount: number;
 }
 
-function createPlatform(
+export function createPlatform(
   x: number,
   y: number,
   width: number,
@@ -71,17 +48,21 @@ function createPlatform(
   solid[id] = true;
 }
 
-function spawnHardcodedPlatforms(): void {
-  const groundY = WORLD.groundY;
-  createPlatform(500, groundY - 70, 200, 24);
-  createPlatform(850, groundY - 85, 160, 24);
-  createPlatform(1200, groundY - 60, 220, 24);
-  createPlatform(1600, groundY - 80, 140, 24);
-  createPlatform(2000, groundY - 70, 200, 24);
-  createPlatform(2450, groundY - 85, 180, 24);
+export async function createBoss(config: BossConfig): Promise<void> {
+  const id = createEntity();
+  sprite[id] = await createSprite(config.sprite, config.spriteWidth, config.spriteHeight, config.frameCount);
+  position[id] = { x: config.x, y: config.y };
+  velocity[id] = { x: 0, y: 0 };
+  enemyTag[id] = true;
+  collider[id] = {
+    ...COLLIDER_SIZE.BOSS,
+    layer: COLLISION_LAYER.ENEMY,
+    mask: COLLISION_MASK.ENEMY,
+  };
+  health[id] = { current: config.health, max: config.health };
 }
 
-export async function createAssetPackPlayer(): Promise<void> {
+export async function createAssetPackPlayer(spawn: { x: number; y: number }): Promise<void> {
   const entityId = createEntity();
 
   const playerSprite = await createAnimatedSprite(
@@ -99,10 +80,7 @@ export async function createAssetPackPlayer(): Promise<void> {
   playerSprite.scale = 2;
   sprite[entityId] = playerSprite;
   input[entityId] = { left: false, right: false, up: false };
-  position[entityId] = {
-    x: 120,
-    y: WORLD.groundY,
-  };
+  position[entityId] = { x: spawn.x, y: spawn.y };
   velocity[entityId] = { x: 0, y: 0 };
   playerTag[entityId] = true;
   collider[entityId] = {
