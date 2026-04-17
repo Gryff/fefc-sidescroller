@@ -199,12 +199,13 @@ describe("loadLevel", () => {
       entities: [],
     };
 
-    global.fetch = vi.fn().mockResolvedValue({
+    const mockFetch = vi.fn().mockResolvedValue({
       json: vi.fn().mockResolvedValue(mockData),
-    } as unknown as Response);
+    });
+    vi.stubGlobal("fetch", mockFetch);
 
     const result = await loadLevel("/levels/test.json");
     expect(result).toEqual(mockData);
-    expect(fetch).toHaveBeenCalledWith("/levels/test.json");
+    expect(mockFetch).toHaveBeenCalledWith("/levels/test.json");
   });
 });
