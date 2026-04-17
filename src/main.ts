@@ -1,16 +1,19 @@
 import { loadAssets } from "./assets";
 import { WORLD } from "./config";
-import { loadEntities } from "./ecs/entities";
 import { startGameLoop } from "./game-loop";
 import { setupKeyboardInput } from "./input/keyboard";
 import { detectTouchDevice, setupTouchInput } from "./input/touch";
+import { loadLevel, spawnLevel } from "./level/level-loader";
 import { createCanvas } from "./rendering/canvas";
 import { spawnProjectile } from "./systems/projectile";
 import type { GameContext, GameState } from "./types";
+import { createSprite } from "./components/components";
 
 // Bootstrap
 const { canvas, ctx } = createCanvas();
-const { projectileSpriteTemplate } = await loadEntities();
+const level = await loadLevel("/levels/level-1.json");
+await spawnLevel(level);
+const projectileSpriteTemplate = await createSprite("/sprites/donut.png", 48, 48, 1);
 
 const isTouchDevice = detectTouchDevice();
 

@@ -47,10 +47,16 @@ export const FIRE_BUTTON = {
   opacity: 0.8,
 } as const;
 
-export const WORLD = {
+const _world = {
   width: 3200,
   groundY: (typeof window !== "undefined" ? window.innerHeight : 768) - 200,
-} as const;
+};
+
+export const WORLD: Readonly<typeof _world> = _world;
+
+export function setWorld(config: { width: number }): void {
+  _world.width = config.width;
+}
 
 export const BACKGROUND = {
   sourceWidthDivisor: 3,

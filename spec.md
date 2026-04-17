@@ -49,6 +49,8 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 ### Medium Priority (architecture)
 - ~~**ECS is hardcoded to specific entity IDs**~~: ✅ Fixed — systems now use `entitiesWith()` queries by component instead of hardcoded IDs.
 - **Global stores limit testability**: ECS stores are module-level singletons. Systems import them directly, making unit tests dependent on shared mutable state. The long-term fix is a `World` class that owns all stores and the entity counter, with systems accepting a `World` argument. Tests construct a fresh `World` per test and `entitiesWith` becomes `world.query(...)`. Short-term: a `resetStores()` utility in `ecs/stores.ts` clears all stores and resets the entity counter for use in `beforeEach`.
+- **`validateLevel` validates rather than parses**: it checks a handful of fields then casts via `asserts data is LevelData`, but the runtime checks don't match the type — `playerSpawn.x/y` are unchecked, `entities` is not verified to be an array, individual entity fields are unverified, and unknown `type` values pass through silently to blow up later in `spawnLevel`. A proper parser would construct `LevelData` field-by-field and reject anything malformed at the boundary.
+- **Level loader y-coordinates are resolved too late**: `loadLevel` returns `LevelData` where `entity.y` is still a ground-relative JSON offset. The conversion (`WORLD.groundY + entity.y`) happens inside `spawnLevel`, so the `LevelData` type cannot distinguish unresolved offsets from world positions. Every spawn helper must remember to apply the offset manually — a future entity type could easily skip it. The fix is to resolve positions inside the parser and return a `ParsedLevel` type with world-absolute coordinates, keeping the ground-relative convention entirely inside `loadLevel`.
 
 ### Low Priority (animation)
 - **Sprite animation doesn't catch up after lag spikes**: `updateSpriteAnimation` subtracts one `frameDuration` per tick, so a large delta only advances one frame. The animation temporarily slows down instead of skipping ahead. Cosmetic-only impact.
@@ -56,7 +58,6 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 ### Low Priority (code quality)
 - **`applyJoystickInput` in wrong module**: `input/touch.ts` contains both one-time setup (`setupTouchInput`) and per-frame logic (`applyJoystickInput`). The per-frame function belongs closer to the game loop, not in the setup module.
 - **Unsafe DOM casts in `canvas.ts`**: `getElementById` and `getContext("2d")` are cast with `as` and no null check — throws at runtime with no useful error if the element is missing.
-- **Magic number `canvas.width / 1.5`** in `ecs/entities.ts:51` — survived the `config.ts` refactor.
 - **`BACKGROUND.sourceWidthDivisor`** is an implementation detail, not an intent. Rename to something like `BACKGROUND_STRIP_COUNT`.
 - **`spawnProjectile` silently no-ops** if the donut sprite isn't loaded — no error, no feedback to the player.
 
