@@ -5,7 +5,7 @@
 The game has a clean ECS architecture, but currently has **no real concept of a "level"**:
 
 - ~~**No world coordinates** — everything is screen-relative. The "scrolling" system fakes it by shifting the background image offset and clamping the player to trigger zones.~~ ✅ World coordinates + camera system implemented.
-- **Ground is a flat line** — `canvasHeight - 200`, no platforms or terrain.
+- ~~**Ground is a flat line** — `canvasHeight - 200`, no platforms or terrain.~~ ✅ Platforms + `platform-collision` system implemented (hardcoded spawns; level-loader still pending).
 - ~~**No health/damage** — collisions are detected but have no consequence.~~ ✅ Health + damage system implemented.
 - ~~**One hardcoded boss** — placed at `canvas.width / 1.5` in screen coords.~~ ✅ Boss placed at `WORLD.width - 400` in world coords.
 - ~~**No world bounds** — the play area is effectively the canvas width.~~ ✅ `WORLD.width` (3200) with camera clamping.
@@ -33,7 +33,7 @@ Several new component stores are needed:
 |---|---|
 | ~~`Health`~~ | ~~`{ current: number, max: number }` for player + enemies + boss~~ ✅ Done |
 | `Damage` | `{ amount: number, cooldown?: number }` for obstacles/enemies on contact |
-| `Solid` | Tag — blocks movement (platforms, walls) |
+| ~~`Solid`~~ | ~~Tag — blocks movement (platforms, walls)~~ ✅ Done |
 | `Pickup` | `{ type: 'health' \| 'speed' \| 'damage', amount: number, duration?: number }` |
 | `PatrolAI` | `{ originX: number, range: number, speed: number, direction: 1 \| -1 }` |
 | `BossTag` | Distinguished from regular enemies — triggers boss behavior |
@@ -42,7 +42,7 @@ Several new component stores are needed:
 
 | System | What it does |
 |---|---|
-| `platform-collision` | Resolves solid entity overlaps — player lands on platforms, can't walk through walls |
+| ~~`platform-collision`~~ | ~~Resolves solid entity overlaps — player lands on platforms, can't walk through walls~~ ✅ Done |
 | ~~`health-damage`~~ | ~~Applies damage from contact with enemies/obstacles~~ ✅ Done (no invincibility frames yet) |
 | `pickup-collection` | Detects player overlap with pickups, applies effect, removes entity |
 | `enemy-ai` | Drives patrol behavior (walk back and forth within range) |
@@ -221,7 +221,7 @@ Platform collision is special — it needs to **resolve** overlaps (push entitie
 Build in layers, each one testable independently:
 
 1. ~~**World coords + camera** — Replace scrolling system, make rendering camera-aware. Game looks the same but is now world-coordinate based.~~ ✅ Done
-2. **Platforms** — Add `Solid` component, `PLATFORM` collision layer, and a `platform-collision` system that resolves overlaps directionally. Spawn a handful of hardcoded platforms in world space so the system can be developed and tested without a level loader. Player can now jump between platforms.
+2. ~~**Platforms** — Add `Solid` component, `PLATFORM` collision layer, and a `platform-collision` system that resolves overlaps directionally. Spawn a handful of hardcoded platforms in world space so the system can be developed and tested without a level loader. Player can now jump between platforms.~~ ✅ Done
 3. **Level loader** — Read JSON, spawn platform entities from data. Replaces hardcoded platforms.
 4. ~~**Health + damage system** — Add health to player and boss. Existing projectile hits now reduce boss HP. Contact damage from boss hurts player. HUD shows health.~~ ✅ Done
 5. **Enemies** — Walker enemies with patrol AI, spawned from level data. Take damage from projectiles, deal contact damage.
@@ -232,6 +232,8 @@ Build in layers, each one testable independently:
 ---
 
 ## Testing the Platform System
+
+✅ Implemented in `src/__tests__/platform-collision.test.ts` — all 10 cases below are covered.
 
 Platform collision is the first system with a **resolution phase**, so it warrants thorough unit tests. Use the existing vitest pattern (see `src/__tests__/collision.test.ts`): reset stores, create entities, invoke the system directly, assert on store state.
 
