@@ -47,7 +47,7 @@ Several new component stores are needed:
 | `pickup-collection` | Detects player overlap with pickups, applies effect, removes entity |
 | `enemy-ai` | Drives patrol behavior (walk back and forth within range) |
 | ~~`camera`~~ | ~~Follows player through the world, replaces current `scrolling.ts`~~ ✅ Done |
-| `level-loader` | Reads JSON, spawns all entities into ECS stores |
+| ~~`level-loader`~~ | ~~Reads JSON, spawns all entities into ECS stores~~ ✅ Done (platform + boss types; enemies/obstacles/pickups still pending) |
 
 ---
 
@@ -222,7 +222,7 @@ Build in layers, each one testable independently:
 
 1. ~~**World coords + camera** — Replace scrolling system, make rendering camera-aware. Game looks the same but is now world-coordinate based.~~ ✅ Done
 2. ~~**Platforms** — Add `Solid` component, `PLATFORM` collision layer, and a `platform-collision` system that resolves overlaps directionally. Spawn a handful of hardcoded platforms in world space so the system can be developed and tested without a level loader. Player can now jump between platforms.~~ ✅ Done
-3. **Level loader** — Read JSON, spawn platform entities from data. Replaces hardcoded platforms.
+3. ~~**Level loader** — Read JSON, spawn platform entities from data. Replaces hardcoded platforms.~~ ✅ Done (platforms + boss loaded from `public/levels/level-1.json`)
 4. ~~**Health + damage system** — Add health to player and boss. Existing projectile hits now reduce boss HP. Contact damage from boss hurts player. HUD shows health.~~ ✅ Done
 5. **Enemies** — Walker enemies with patrol AI, spawned from level data. Take damage from projectiles, deal contact damage.
 6. **Obstacles** — Static hazards loaded from level data that deal damage.
