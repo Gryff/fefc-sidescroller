@@ -25,14 +25,16 @@ export function updatePhysics(dt: number): void {
 }
 
 // Runs after platform-collision so world ground can re-assert grounded for
-// entities that cleared their flag during platform resolution.
+// entities that cleared their flag during platform resolution. Applies to
+// every non-flying velocity-bearing entity so walkers (and anything else
+// subject to gravity) rest on the world floor, not just the player.
 export function resolveWorldGround(): void {
-  const [playerEntityId] = entitiesWith("playerTag", "position", "velocity");
-  if (playerEntityId === undefined) return;
-
-  if (position[playerEntityId].y >= WORLD.groundY) {
-    position[playerEntityId].y = WORLD.groundY;
-    velocity[playerEntityId].y = 0;
-    grounded[playerEntityId] = true;
+  for (const id of entitiesWith("position", "velocity")) {
+    if (id in flying) continue;
+    if (position[id].y >= WORLD.groundY) {
+      position[id].y = WORLD.groundY;
+      velocity[id].y = 0;
+      grounded[id] = true;
+    }
   }
 }
