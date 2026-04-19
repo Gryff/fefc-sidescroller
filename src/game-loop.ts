@@ -3,7 +3,8 @@ import { applyJoystickInput } from "./input/touch";
 import { render } from "./rendering/renderer";
 import { updateBossAnimation } from "./systems/boss-animation";
 import { updateCollision } from "./systems/collision";
-import { updateMovement } from "./systems/movement";
+import { updateEnemyAI } from "./systems/enemy-ai";
+import { updatePlayerInput } from "./systems/player-input";
 import { updatePlatformCollision } from "./systems/platform-collision";
 import { updatePlayerAnimation } from "./systems/player-animation";
 import { resolveWorldGround, updatePhysics } from "./systems/physics";
@@ -30,11 +31,12 @@ function update(
   applyJoystickInput(state.joystick, isTouchDevice);
 
   // Movement & physics
-  updateMovement(state.player, dt);
+  updatePlayerInput(state.player);
+  updateEnemyAI();
   updatePhysics(dt);
   updatePlatformCollision();
   resolveWorldGround();
-  updateProjectiles(state.camera.x, canvas.width, dt);
+  updateProjectiles(state.camera.x, canvas.width);
 
   // Collision detection & reactions
   updateCollision();

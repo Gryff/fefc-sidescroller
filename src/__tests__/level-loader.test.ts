@@ -2,12 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { COLLISION_LAYER, COLLISION_MASK, WORLD, setWorld } from "../config";
 import {
   collider,
+  damage,
   enemyTag,
   health,
+  patrolAI,
   playerTag,
   position,
   resetStores,
   solid,
+  velocity,
 } from "../ecs/stores";
 import { loadLevel, spawnLevel, validateLevel } from "../level/level-loader";
 import type { LevelData } from "../level/level-schema";
@@ -85,6 +88,7 @@ describe("spawnLevel", () => {
           x: 4000,
           y: -20,
           health: 8,
+          damage: 1,
           spriteWidth: 96,
           spriteHeight: 128,
           frameCount: 2,
@@ -97,6 +101,55 @@ describe("spawnLevel", () => {
     const bossId = Number(Object.keys(enemyTag)[0]);
     expect(health[bossId]).toEqual({ current: 8, max: 8 });
     expect(position[bossId]).toEqual({ x: 4000, y: groundY - 20 });
+    expect(damage[bossId]).toEqual({ amount: 1 });
+  });
+
+  it("spawns walker enemy with patrol, damage, health, and enemy-layer collider", async () => {
+    const data = makeFixture({
+      entities: [
+        {
+          type: "enemy",
+          subtype: "walker",
+          x: 1200,
+          y: 0,
+          health: 2,
+          damage: 1,
+          patrol: { range: 120, speed: 1.5, direction: "right" },
+        },
+      ],
+    });
+
+    await spawnLevel(data);
+
+    const walkerId = Number(Object.keys(enemyTag)[0]);
+    expect(position[walkerId]).toEqual({ x: 1200, y: groundY });
+    expect(velocity[walkerId]).toEqual({ x: 0, y: 0 });
+    expect(health[walkerId]).toEqual({ current: 2, max: 2 });
+    expect(damage[walkerId]).toEqual({ amount: 1 });
+    expect(patrolAI[walkerId]).toEqual({
+      originX: 1200,
+      originY: groundY,
+      range: 120,
+      speed: 1.5,
+      direction: "right",
+    });
+    expect(collider[walkerId].layer).toBe(COLLISION_LAYER.ENEMY);
+    expect(collider[walkerId].mask).toBe(COLLISION_MASK.ENEMY);
+  });
+
+  it("throws a descriptive error for unknown enemy subtype", async () => {
+    const data = makeFixture({
+      entities: [
+        {
+          type: "enemy",
+          subtype: "flyer",
+        } as unknown as LevelData["entities"][number],
+      ],
+    });
+
+    await expect(spawnLevel(data)).rejects.toThrow(
+      "Unknown enemy subtype: 'flyer'",
+    );
   });
 
   it("spawns player at resolved world position and sets playerTag", async () => {
@@ -135,6 +188,7 @@ describe("spawnLevel", () => {
           x: 3000,
           y: 0,
           health: 5,
+          damage: 1,
           spriteWidth: 96,
           spriteHeight: 128,
           frameCount: 2,

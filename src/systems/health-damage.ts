@@ -1,9 +1,11 @@
 import { entitiesWith } from "../ecs/query";
 import {
   collisionEvents,
+  damage,
   destroyEntity,
   enemyTag,
   health,
+  playerTag,
   projectile,
 } from "../ecs/stores";
 
@@ -25,16 +27,17 @@ export function updateHealthDamage(): { playerDied: boolean } {
     }
   }
 
-  // Contact → player damage
+  // Contact → player damage (driven by `damage` component)
   let playerDied = false;
-  const players = entitiesWith("playerTag", "collisionEvents");
-  for (const playerId of players) {
-    const events = collisionEvents[playerId];
+  const dealers = entitiesWith("damage", "collisionEvents");
+  for (const dealerId of dealers) {
+    const events = collisionEvents[dealerId];
     for (const otherId of events.collidingWith) {
-      if (!(otherId in enemyTag)) continue;
+      if (!(otherId in playerTag)) continue;
+      if (!(otherId in health)) continue;
 
-      health[playerId].current -= 1;
-      if (health[playerId].current <= 0) {
+      health[otherId].current -= damage[dealerId].amount;
+      if (health[otherId].current <= 0) {
         playerDied = true;
       }
     }

@@ -101,8 +101,22 @@ export function render(
   for (const id of entitiesWith("playerTag", "sprite")) {
     drawSprite(ctx, id, cameraX);
   }
-  for (const id of entitiesWith("enemyTag", "sprite")) {
-    drawSprite(ctx, id, cameraX);
+  for (const id of entitiesWith("enemyTag")) {
+    if (id in sprite) {
+      drawSprite(ctx, id, cameraX);
+    } else if (id in collider && id in position) {
+      const p = position[id];
+      const c = collider[id];
+      const x = p.x + c.offsetX - c.width / 2 - cameraX;
+      const y = p.y + c.offsetY - c.height / 2;
+      ctx.save();
+      ctx.fillStyle = "#b03a2e";
+      ctx.strokeStyle = "#6e1f17";
+      ctx.lineWidth = 2;
+      ctx.fillRect(x, y, c.width, c.height);
+      ctx.strokeRect(x, y, c.width, c.height);
+      ctx.restore();
+    }
   }
 
   // Projectiles

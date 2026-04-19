@@ -4,6 +4,7 @@ import { entitiesWith } from "../ecs/query";
 import {
   collider,
   createEntity,
+  flying,
   position,
   projectile,
   projectilePool,
@@ -35,6 +36,7 @@ export function spawnProjectile(
       x: facingRight ? PROJECTILE.speed : -PROJECTILE.speed,
       y: 0,
     };
+    flying[projEntityId] = true;
     projectile[projEntityId] = { active: true };
     collider[projEntityId] = {
       ...COLLIDER_SIZE.PROJECTILE,
@@ -47,15 +49,11 @@ export function spawnProjectile(
 export function updateProjectiles(
   cameraX: number,
   canvasWidth: number,
-  dt: number,
 ): void {
   const margin = 200;
   for (const projId in projectile) {
     if (projectile[projId] && projectile[projId].active) {
       if (position[projId] && velocity[projId]) {
-        position[projId].x += velocity[projId].x * dt;
-        position[projId].y += velocity[projId].y * dt;
-
         if (
           position[projId].x < cameraX - margin ||
           position[projId].x > cameraX + canvasWidth + margin ||

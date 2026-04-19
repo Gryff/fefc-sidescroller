@@ -1,25 +1,27 @@
 import { PHYSICS, PLAYER, WORLD } from "../config";
 import { entitiesWith } from "../ecs/query";
-import { grounded, input, position, velocity } from "../ecs/stores";
+import { flying, grounded, input, position, velocity } from "../ecs/stores";
 
 export function updatePhysics(dt: number): void {
-  const [playerEntityId] = entitiesWith(
-    "playerTag",
-    "position",
-    "velocity",
-    "input",
-  );
-  if (playerEntityId === undefined) return;
-
-  // Jump (reads grounded from previous frame)
-  if (input[playerEntityId].up && playerEntityId in grounded) {
+  // Jump impulse (player-specific, reads grounded from previous frame)
+  const [playerEntityId] = entitiesWith("playerTag", "velocity", "input");
+  if (
+    playerEntityId !== undefined &&
+    input[playerEntityId].up &&
+    playerEntityId in grounded
+  ) {
     velocity[playerEntityId].y = PLAYER.jumpStrength;
     delete grounded[playerEntityId];
   }
 
-  // Gravity + integrate
-  velocity[playerEntityId].y += PHYSICS.gravity * dt;
-  position[playerEntityId].y += velocity[playerEntityId].y * dt;
+  // Gravity + integrate for every entity with position + velocity.
+  for (const id of entitiesWith("position", "velocity")) {
+    if (!(id in flying)) {
+      velocity[id].y += PHYSICS.gravity * dt;
+    }
+    position[id].x += velocity[id].x * dt;
+    position[id].y += velocity[id].y * dt;
+  }
 }
 
 // Runs after platform-collision so world ground can re-assert grounded for
