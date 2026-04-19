@@ -59,7 +59,7 @@ export async function spawnLevel(data: LevelData): Promise<void> {
       case "enemy":
         switch (entity.subtype) {
           case "walker":
-            createWalker({
+            await createWalker({
               x: entity.x,
               y: worldY,
               health: entity.health,

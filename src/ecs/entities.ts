@@ -76,8 +76,25 @@ export async function createBoss(config: BossConfig): Promise<void> {
   damage[id] = { amount: config.damage };
 }
 
-export function createWalker(config: WalkerConfig): void {
+export async function createWalker(config: WalkerConfig): Promise<void> {
   const id = createEntity();
+
+  const walkerSprite = await createAnimatedSprite(
+    [
+      "/assetpack/Character skin colors/Female Skin3.png",
+      "/assetpack/Female Hair/Female Hair2.png",
+      "/assetpack/Female Clothing/Purple Corset v2.png",
+      "/assetpack/Female Clothing/Skirt.png",
+      "/assetpack/Female Clothing/Purple Socks.png",
+    ],
+    80,
+    64,
+    CHARACTER_ANIMATIONS,
+    "walk",
+  );
+  walkerSprite.scale = 1.5;
+  sprite[id] = walkerSprite;
+
   position[id] = { x: config.x, y: config.y };
   velocity[id] = { x: 0, y: 0 };
   enemyTag[id] = true;

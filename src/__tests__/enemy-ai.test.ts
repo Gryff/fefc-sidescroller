@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createWalker } from "../ecs/entities";
 import {
   createEntity,
@@ -8,6 +8,19 @@ import {
   velocity,
 } from "../ecs/stores";
 import { updateEnemyAI } from "../systems/enemy-ai";
+
+vi.mock("../components/components", () => ({
+  createAnimatedSprite: vi.fn().mockResolvedValue({
+    image: {},
+    width: 80,
+    height: 64,
+    frameCount: 5,
+    currentFrame: 0,
+    animations: {},
+    currentAnimation: "walk",
+    animationElapsed: 0,
+  }),
+}));
 
 describe("updateEnemyAI", () => {
   beforeEach(() => {
@@ -100,8 +113,8 @@ describe("updateEnemyAI", () => {
     expect(() => updateEnemyAI()).not.toThrow();
   });
 
-  it("captures originX at spawn via createWalker", () => {
-    createWalker({
+  it("captures originX at spawn via createWalker", async () => {
+    await createWalker({
       x: 500,
       y: 200,
       health: 2,
