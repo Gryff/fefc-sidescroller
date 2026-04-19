@@ -80,6 +80,7 @@ export const COLLIDER_SIZE = {
   PLAYER: { width: 40, height: 50, offsetX: 0, offsetY: 7 },
   BOSS: { width: 60, height: 100, offsetX: 0, offsetY: 14 },
   PROJECTILE: { width: 32, height: 32, offsetX: 0, offsetY: 0 },
+  WALKER: { width: 40, height: 40, offsetX: 0, offsetY: 0 },
 } as const;
 
 export const HEALTH = {

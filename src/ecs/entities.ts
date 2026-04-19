@@ -1,4 +1,5 @@
 import { createAnimatedSprite, createSprite } from "../components/components";
+import type { Direction } from "../components/components";
 import {
   CHARACTER_ANIMATIONS,
   COLLIDER_SIZE,
@@ -9,9 +10,11 @@ import {
 import {
   collider,
   createEntity,
+  damage,
   enemyTag,
   health,
   input,
+  patrolAI,
   playerTag,
   position,
   solid,
@@ -24,9 +27,20 @@ export interface BossConfig {
   x: number;
   y: number;
   health: number;
+  damage: number;
   spriteWidth: number;
   spriteHeight: number;
   frameCount: number;
+}
+
+export interface WalkerConfig {
+  x: number;
+  y: number;
+  health: number;
+  damage: number;
+  range: number;
+  speed: number;
+  direction: Direction;
 }
 
 export function createPlatform(
@@ -52,7 +66,6 @@ export async function createBoss(config: BossConfig): Promise<void> {
   const id = createEntity();
   sprite[id] = await createSprite(config.sprite, config.spriteWidth, config.spriteHeight, config.frameCount);
   position[id] = { x: config.x, y: config.y };
-  velocity[id] = { x: 0, y: 0 };
   enemyTag[id] = true;
   collider[id] = {
     ...COLLIDER_SIZE.BOSS,
@@ -60,6 +73,45 @@ export async function createBoss(config: BossConfig): Promise<void> {
     mask: COLLISION_MASK.ENEMY,
   };
   health[id] = { current: config.health, max: config.health };
+  damage[id] = { amount: config.damage };
+}
+
+export async function createWalker(config: WalkerConfig): Promise<void> {
+  const id = createEntity();
+
+  const walkerSprite = await createAnimatedSprite(
+    [
+      "/assetpack/Character skin colors/Female Skin3.png",
+      "/assetpack/Female Hair/Female Hair2.png",
+      "/assetpack/Female Clothing/Purple Corset v2.png",
+      "/assetpack/Female Clothing/Skirt.png",
+      "/assetpack/Female Clothing/Purple Socks.png",
+    ],
+    80,
+    64,
+    CHARACTER_ANIMATIONS,
+    "walk",
+  );
+  walkerSprite.scale = 1.5;
+  sprite[id] = walkerSprite;
+
+  position[id] = { x: config.x, y: config.y };
+  velocity[id] = { x: 0, y: 0 };
+  enemyTag[id] = true;
+  collider[id] = {
+    ...COLLIDER_SIZE.WALKER,
+    layer: COLLISION_LAYER.ENEMY,
+    mask: COLLISION_MASK.ENEMY,
+  };
+  health[id] = { current: config.health, max: config.health };
+  damage[id] = { amount: config.damage };
+  patrolAI[id] = {
+    originX: config.x,
+    originY: config.y,
+    range: config.range,
+    speed: config.speed,
+    direction: config.direction,
+  };
 }
 
 export async function createAssetPackPlayer(spawn: { x: number; y: number }): Promise<void> {

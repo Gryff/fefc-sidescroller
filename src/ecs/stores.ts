@@ -1,11 +1,14 @@
 import type {
   Collider,
   CollisionEvents,
+  Damage,
   EnemyTag,
   EntityId,
+  Flying,
   Grounded,
   Health,
   Input,
+  PatrolAI,
   PlayerTag,
   Position,
   Projectile,
@@ -33,6 +36,9 @@ export const collisionEvents: CollisionEvents = {};
 export const health: Health = {};
 export const solid: Solid = {};
 export const grounded: Grounded = {};
+export const flying: Flying = {};
+export const patrolAI: PatrolAI = {};
+export const damage: Damage = {};
 
 export const allStores = {
   sprite,
@@ -47,6 +53,9 @@ export const allStores = {
   health,
   solid,
   grounded,
+  flying,
+  patrolAI,
+  damage,
 };
 
 export function resetStores(): void {

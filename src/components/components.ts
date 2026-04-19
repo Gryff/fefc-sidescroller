@@ -62,6 +62,27 @@ export type PlayerTag = Record<EntityId, true>;
 export type EnemyTag = Record<EntityId, true>;
 export type Solid = Record<EntityId, true>;
 export type Grounded = Record<EntityId, true>;
+export type Flying = Record<EntityId, true>;
+
+export type Direction = "left" | "right" | "up" | "down";
+
+export type PatrolAI = Record<
+  EntityId,
+  {
+    originX: number;
+    originY: number;
+    range: number;
+    speed: number;
+    direction: Direction;
+  }
+>;
+
+export type Damage = Record<
+  EntityId,
+  {
+    amount: number;
+  }
+>;
 
 export type Collider = Record<
   EntityId,

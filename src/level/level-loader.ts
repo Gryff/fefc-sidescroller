@@ -1,5 +1,10 @@
 import { setWorld, WORLD } from "../config";
-import { createAssetPackPlayer, createBoss, createPlatform } from "../ecs/entities";
+import {
+  createAssetPackPlayer,
+  createBoss,
+  createPlatform,
+  createWalker,
+} from "../ecs/entities";
 import type { LevelData } from "./level-schema";
 
 export function validateLevel(data: unknown): asserts data is LevelData {
@@ -45,10 +50,30 @@ export async function spawnLevel(data: LevelData): Promise<void> {
           x: entity.x,
           y: worldY,
           health: entity.health,
+          damage: entity.damage,
           spriteWidth: entity.spriteWidth,
           spriteHeight: entity.spriteHeight,
           frameCount: entity.frameCount,
         });
+        break;
+      case "enemy":
+        switch (entity.subtype) {
+          case "walker":
+            await createWalker({
+              x: entity.x,
+              y: worldY,
+              health: entity.health,
+              damage: entity.damage,
+              range: entity.patrol.range,
+              speed: entity.patrol.speed,
+              direction: entity.patrol.direction,
+            });
+            break;
+          default: {
+            const bad = entity as { subtype: string };
+            throw new Error(`Unknown enemy subtype: '${bad.subtype}'`);
+          }
+        }
         break;
       default: {
         const bad = entity as { type: string };
