@@ -52,6 +52,10 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 - **`validateLevel` validates rather than parses**: it checks a handful of fields then casts via `asserts data is LevelData`, but the runtime checks don't match the type — `playerSpawn.x/y` are unchecked, `entities` is not verified to be an array, individual entity fields are unverified, and unknown `type` values pass through silently to blow up later in `spawnLevel`. A proper parser would construct `LevelData` field-by-field and reject anything malformed at the boundary.
 - **Level loader y-coordinates are resolved too late**: `loadLevel` returns `LevelData` where `entity.y` is still a ground-relative JSON offset. The conversion (`WORLD.groundY + entity.y`) happens inside `spawnLevel`, so the `LevelData` type cannot distinguish unresolved offsets from world positions. Every spawn helper must remember to apply the offset manually — a future entity type could easily skip it. The fix is to resolve positions inside the parser and return a `ParsedLevel` type with world-absolute coordinates, keeping the ground-relative convention entirely inside `loadLevel`.
 
+### Low Priority (flexibility)
+- **`PatrolAI.direction` is cardinal-only**: the `Direction` union (`"left" | "right" | "up" | "down"`) is readable but locks patrol to 4 directions. If diagonal or arbitrary-angle patrol is ever needed, switch to a unit vector `{ x: number, y: number }` — loses some readability at the JSON boundary but generalises cleanly.
+- ~~**Vertical patrollers need to opt out of gravity**~~: ✅ Decided — `Flying` tag (gravity opt-out) added in the enemy-plan phase 1 work. Tagging an entity `flying` causes the integrator to skip the gravity step. Used today by projectiles; available for future vertical patrollers and flyers.
+
 ### Low Priority (animation)
 - **Sprite animation doesn't catch up after lag spikes**: `updateSpriteAnimation` subtracts one `frameDuration` per tick, so a large delta only advances one frame. The animation temporarily slows down instead of skipping ahead. Cosmetic-only impact.
 
