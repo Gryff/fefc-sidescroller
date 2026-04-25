@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { updateHealthDamage } from "../systems/health-damage";
+import { updateProjectileHits } from "../systems/projectile-hits";
 import { resetStores } from "../ecs/stores";
 import {
+  collider,
   collisionEvents,
   createEntity,
   damage,
@@ -10,6 +12,7 @@ import {
   playerTag,
   projectile,
 } from "../ecs/stores";
+import { COLLIDER_SIZE, COLLISION_LAYER, COLLISION_MASK } from "../config";
 
 describe("updateHealthDamage", () => {
   beforeEach(() => {
@@ -55,6 +58,30 @@ describe("updateHealthDamage", () => {
       collisionEvents[projId] = { collidingWith: [enemyId] };
 
       expect(() => updateHealthDamage()).not.toThrow();
+    });
+
+    it("applies damage when run before updateProjectileHits (game-loop order)", () => {
+      // Regression: updateProjectileHits used to deactivate the projectile
+      // before updateHealthDamage ran, so projectile damage was silently
+      // dropped end-to-end despite passing in isolation.
+      const enemyId = createEntity();
+      enemyTag[enemyId] = true;
+      health[enemyId] = { current: 2, max: 2 };
+
+      const projId = createEntity();
+      projectile[projId] = { active: true };
+      collider[projId] = {
+        ...COLLIDER_SIZE.PROJECTILE,
+        layer: COLLISION_LAYER.PROJECTILE,
+        mask: COLLISION_MASK.PROJECTILE,
+      };
+      collisionEvents[projId] = { collidingWith: [enemyId] };
+
+      updateHealthDamage();
+      updateProjectileHits();
+
+      expect(health[enemyId].current).toBe(1);
+      expect(projectile[projId].active).toBe(false);
     });
 
     it("does not deal damage from inactive projectile", () => {

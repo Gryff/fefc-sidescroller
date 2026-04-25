@@ -26,8 +26,10 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 - ✅ Player Animation: Walking/jumping animations (frame-based or sprite sheet).
 - ✅ Collision Detection: Collisions with platforms, obstacles, and other entities.
 
+### In Progress 🚧
+- 🚧 Level Design: JSON-driven level loader spawns platforms, walkers, and the boss from `public/levels/level-1.json`. Still pending: obstacles, pickups, multiple backgrounds/level layouts, level-completion win state.
+
 ### Not Done 🙅‍♂️
-- 🙅‍♂️ Level Design: Add platforms, obstacles, and interactive elements. Support for multiple backgrounds or level layouts.
 - 🙅‍♂️ Sound Effects & Music: Add audio feedback for actions and background music.
 - 🙅‍♂️ Score & Progression: Track player progress, collectibles, or score.
 - 🙅‍♂️ Game States: Add menus, pause, restart, and win/lose conditions.
@@ -48,7 +50,7 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 
 ### Medium Priority (architecture)
 - ~~**ECS is hardcoded to specific entity IDs**~~: ✅ Fixed — systems now use `entitiesWith()` queries by component instead of hardcoded IDs.
-- **Global stores limit testability**: ECS stores are module-level singletons. Systems import them directly, making unit tests dependent on shared mutable state. The long-term fix is a `World` class that owns all stores and the entity counter, with systems accepting a `World` argument. Tests construct a fresh `World` per test and `entitiesWith` becomes `world.query(...)`. Short-term: a `resetStores()` utility in `ecs/stores.ts` clears all stores and resets the entity counter for use in `beforeEach`.
+- **Global stores limit testability**: ECS stores are module-level singletons. Systems import them directly, making unit tests dependent on shared mutable state. The short-term `resetStores()` utility in `ecs/stores.ts` is in place and used by tests in `beforeEach`. The long-term fix — still pending — is a `World` class that owns all stores and the entity counter, with systems accepting a `World` argument. Tests would construct a fresh `World` per test and `entitiesWith` would become `world.query(...)`.
 - **`validateLevel` validates rather than parses**: it checks a handful of fields then casts via `asserts data is LevelData`, but the runtime checks don't match the type — `playerSpawn.x/y` are unchecked, `entities` is not verified to be an array, individual entity fields are unverified, and unknown `type` values pass through silently to blow up later in `spawnLevel`. A proper parser would construct `LevelData` field-by-field and reject anything malformed at the boundary.
 - **Level loader y-coordinates are resolved too late**: `loadLevel` returns `LevelData` where `entity.y` is still a ground-relative JSON offset. The conversion (`WORLD.groundY + entity.y`) happens inside `spawnLevel`, so the `LevelData` type cannot distinguish unresolved offsets from world positions. Every spawn helper must remember to apply the offset manually — a future entity type could easily skip it. The fix is to resolve positions inside the parser and return a `ParsedLevel` type with world-absolute coordinates, keeping the ground-relative convention entirely inside `loadLevel`.
 

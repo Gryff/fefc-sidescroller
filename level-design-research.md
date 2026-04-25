@@ -32,11 +32,11 @@ Several new component stores are needed:
 | Component | Purpose |
 |---|---|
 | ~~`Health`~~ | ~~`{ current: number, max: number }` for player + enemies + boss~~ ✅ Done |
-| `Damage` | `{ amount: number, cooldown?: number }` for obstacles/enemies on contact |
+| ~~`Damage`~~ | ~~`{ amount: number }` for obstacles/enemies on contact~~ ✅ Done (no `cooldown`/i-frames yet) |
 | ~~`Solid`~~ | ~~Tag — blocks movement (platforms, walls)~~ ✅ Done |
 | `Pickup` | `{ type: 'health' \| 'speed' \| 'damage', amount: number, duration?: number }` |
-| `PatrolAI` | `{ originX: number, range: number, speed: number, direction: 1 \| -1 }` |
-| `BossTag` | Distinguished from regular enemies — triggers boss behavior |
+| ~~`PatrolAI`~~ | ~~`{ originX, originY, range, speed, direction }` — direction is a `Direction` string union, not `±1`~~ ✅ Done |
+| `BossTag` | Distinguished from regular enemies — triggers boss behavior (currently the boss reuses `EnemyTag`; dedicated `BossTag` not yet needed) |
 
 ### 3. New Systems
 
@@ -45,9 +45,9 @@ Several new component stores are needed:
 | ~~`platform-collision`~~ | ~~Resolves solid entity overlaps — player lands on platforms, can't walk through walls~~ ✅ Done |
 | ~~`health-damage`~~ | ~~Applies damage from contact with enemies/obstacles~~ ✅ Done (no invincibility frames yet) |
 | `pickup-collection` | Detects player overlap with pickups, applies effect, removes entity |
-| `enemy-ai` | Drives patrol behavior (walk back and forth within range) |
+| ~~`enemy-ai`~~ | ~~Drives patrol behavior (walk back and forth within range)~~ ✅ Done |
 | ~~`camera`~~ | ~~Follows player through the world, replaces current `scrolling.ts`~~ ✅ Done |
-| ~~`level-loader`~~ | ~~Reads JSON, spawns all entities into ECS stores~~ ✅ Done (platform + boss types; enemies/obstacles/pickups still pending) |
+| ~~`level-loader`~~ | ~~Reads JSON, spawns all entities into ECS stores~~ ✅ Done (platform + boss + walker types; obstacles/pickups still pending) |
 
 ---
 
@@ -222,9 +222,9 @@ Build in layers, each one testable independently:
 
 1. ~~**World coords + camera** — Replace scrolling system, make rendering camera-aware. Game looks the same but is now world-coordinate based.~~ ✅ Done
 2. ~~**Platforms** — Add `Solid` component, `PLATFORM` collision layer, and a `platform-collision` system that resolves overlaps directionally. Spawn a handful of hardcoded platforms in world space so the system can be developed and tested without a level loader. Player can now jump between platforms.~~ ✅ Done
-3. ~~**Level loader** — Read JSON, spawn platform entities from data. Replaces hardcoded platforms.~~ ✅ Done (platforms + boss loaded from `public/levels/level-1.json`)
+3. ~~**Level loader** — Read JSON, spawn platform entities from data. Replaces hardcoded platforms.~~ ✅ Done (platforms + boss + walkers loaded from `public/levels/level-1.json`)
 4. ~~**Health + damage system** — Add health to player and boss. Existing projectile hits now reduce boss HP. Contact damage from boss hurts player. HUD shows health.~~ ✅ Done
-5. **Enemies** — Walker enemies with patrol AI, spawned from level data. Take damage from projectiles, deal contact damage.
+5. ~~**Enemies** — Walker enemies with patrol AI, spawned from level data. Take damage from projectiles, deal contact damage.~~ ✅ Done (component-driven contact damage via `Damage`; walker uses player asset-pack sprite as a placeholder rather than a colored rect)
 6. **Obstacles** — Static hazards loaded from level data that deal damage.
 7. **Pickups** — Health and power-up items scattered through the level.
 8. **Level completion** — Boss death triggers win state.
