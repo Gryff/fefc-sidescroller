@@ -40,8 +40,8 @@ function update(
 
   // Collision detection & reactions
   updateCollision();
-  updateProjectileHits();
   const { playerDied } = updateHealthDamage();
+  updateProjectileHits();
   if (playerDied) {
     state.gameRunning = false;
   }
