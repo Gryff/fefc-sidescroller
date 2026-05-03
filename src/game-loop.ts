@@ -8,7 +8,6 @@ import { updatePlayerInput } from "./systems/player-input";
 import { updatePlatformCollision } from "./systems/platform-collision";
 import { updatePlayerAnimation } from "./systems/player-animation";
 import { resolveWorldGround, updatePhysics } from "./systems/physics";
-import { updateProjectileHits } from "./systems/projectile-hits";
 import { updateSpriteAnimation } from "./systems/sprite-animation";
 import { updateProjectiles } from "./systems/projectile";
 import { updateHealthDamage } from "./systems/health-damage";
@@ -41,7 +40,6 @@ function update(
   // Collision detection & reactions
   updateCollision();
   const { playerDied } = updateHealthDamage();
-  updateProjectileHits();
   if (playerDied) {
     state.gameRunning = false;
   }

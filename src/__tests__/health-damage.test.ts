@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { updateHealthDamage } from "../systems/health-damage";
-import { updateProjectileHits } from "../systems/projectile-hits";
 import { resetStores } from "../ecs/stores";
 import {
   collider,
@@ -11,6 +10,7 @@ import {
   health,
   playerTag,
   projectile,
+  projectilePool,
 } from "../ecs/stores";
 import { COLLIDER_SIZE, COLLISION_LAYER, COLLISION_MASK } from "../config";
 
@@ -60,10 +60,7 @@ describe("updateHealthDamage", () => {
       expect(() => updateHealthDamage()).not.toThrow();
     });
 
-    it("applies damage when run before updateProjectileHits (game-loop order)", () => {
-      // Regression: updateProjectileHits used to deactivate the projectile
-      // before updateHealthDamage ran, so projectile damage was silently
-      // dropped end-to-end despite passing in isolation.
+    it("deactivates the projectile after it hits an enemy", () => {
       const enemyId = createEntity();
       enemyTag[enemyId] = true;
       health[enemyId] = { current: 2, max: 2 };
@@ -78,9 +75,39 @@ describe("updateHealthDamage", () => {
       collisionEvents[projId] = { collidingWith: [enemyId] };
 
       updateHealthDamage();
-      updateProjectileHits();
 
       expect(health[enemyId].current).toBe(1);
+      expect(projectile[projId].active).toBe(false);
+      expect(collider[projId]).toBeUndefined();
+      expect(projectilePool).toContain(projId);
+    });
+
+    it("does not carry through to a second enemy after a kill (regression)", () => {
+      // Regression: when a projectile killed an enemy, destroyEntity removed
+      // the enemyTag, which the separate projectile-hits system needed to see
+      // in order to deactivate the projectile. The projectile would then
+      // continue and damage the next enemy in its collision list.
+      const killedId = createEntity();
+      enemyTag[killedId] = true;
+      health[killedId] = { current: 1, max: 1 };
+
+      const survivorId = createEntity();
+      enemyTag[survivorId] = true;
+      health[survivorId] = { current: 2, max: 2 };
+
+      const projId = createEntity();
+      projectile[projId] = { active: true };
+      collider[projId] = {
+        ...COLLIDER_SIZE.PROJECTILE,
+        layer: COLLISION_LAYER.PROJECTILE,
+        mask: COLLISION_MASK.PROJECTILE,
+      };
+      collisionEvents[projId] = { collidingWith: [killedId, survivorId] };
+
+      updateHealthDamage();
+
+      expect(health[killedId]).toBeUndefined();
+      expect(health[survivorId].current).toBe(2);
       expect(projectile[projId].active).toBe(false);
     });
 

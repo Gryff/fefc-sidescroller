@@ -1,5 +1,6 @@
 import { entitiesWith } from "../ecs/query";
 import {
+  collider,
   collisionEvents,
   damage,
   destroyEntity,
@@ -7,6 +8,7 @@ import {
   health,
   playerTag,
   projectile,
+  projectilePool,
 } from "../ecs/stores";
 
 export function updateHealthDamage(): { playerDied: boolean } {
@@ -18,12 +20,18 @@ export function updateHealthDamage(): { playerDied: boolean } {
     const events = collisionEvents[projId];
     for (const otherId of events.collidingWith) {
       if (!(otherId in enemyTag)) continue;
-      if (!(otherId in health)) continue;
 
-      health[otherId].current -= 1;
-      if (health[otherId].current <= 0) {
-        destroyEntity(otherId);
+      if (otherId in health) {
+        health[otherId].current -= 1;
+        if (health[otherId].current <= 0) {
+          destroyEntity(otherId);
+        }
       }
+
+      delete collider[projId];
+      projectile[projId].active = false;
+      projectilePool.push(projId);
+      break;
     }
   }
 
