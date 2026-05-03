@@ -81,11 +81,11 @@ export async function createWalker(config: WalkerConfig): Promise<void> {
 
   const walkerSprite = await createAnimatedSprite(
     [
-      "/assetpack/Character skin colors/Female Skin3.png",
-      "/assetpack/Female Hair/Female Hair2.png",
-      "/assetpack/Female Clothing/Purple Corset v2.png",
-      "/assetpack/Female Clothing/Skirt.png",
-      "/assetpack/Female Clothing/Purple Socks.png",
+      "/assetpack/Character skin colors/Male Skin2.png",
+      "/assetpack/Male Hair/Male Hair3.png",
+      "/assetpack/Male Clothing/Purple Shirt v2.png",
+      "/assetpack/Male Clothing/Purple Pants.png",
+      "/assetpack/Male Clothing/Boots.png",
     ],
     80,
     64,
