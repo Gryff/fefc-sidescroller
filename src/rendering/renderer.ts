@@ -1,8 +1,14 @@
 import type { EntityId } from "../components/components";
-import { BACKGROUND, DEBUG_COLLIDERS, FIRE_BUTTON, JOYSTICK } from "../config";
+import {
+  BACKGROUND,
+  DEBUG_COLLIDERS,
+  FIRE_BUTTON,
+  HEALTH_BAR,
+  JOYSTICK,
+} from "../config";
 import { entitiesWith } from "../ecs/query";
 import type { GameAssets, GameContext, GameState } from "../types";
-import { collider, position, projectile, sprite } from "../ecs/stores";
+import { collider, health, position, projectile, sprite } from "../ecs/stores";
 
 function drawSprite(
   ctx: CanvasRenderingContext2D,
@@ -124,6 +130,28 @@ export function render(
     if (projectile[projId] && projectile[projId].active) {
       drawSprite(ctx, Number(projId), cameraX);
     }
+  }
+
+  // Health bars — floating above any entity with health
+  for (const id of entitiesWith("health", "position", "collider")) {
+    const h = health[id];
+    const p = position[id];
+    const c = collider[id];
+    const barWidth = c.width;
+    const barX = p.x + c.offsetX - c.width / 2 - cameraX;
+    const colliderTop = p.y + c.offsetY - c.height / 2;
+    const barY = colliderTop - HEALTH_BAR.marginAboveCollider - HEALTH_BAR.height;
+    const fillRatio = Math.max(0, Math.min(1, h.current / h.max));
+
+    ctx.save();
+    ctx.fillStyle = HEALTH_BAR.backgroundColor;
+    ctx.fillRect(barX, barY, barWidth, HEALTH_BAR.height);
+    ctx.fillStyle = HEALTH_BAR.fillColor;
+    ctx.fillRect(barX, barY, barWidth * fillRatio, HEALTH_BAR.height);
+    ctx.strokeStyle = HEALTH_BAR.borderColor;
+    ctx.lineWidth = HEALTH_BAR.borderWidth;
+    ctx.strokeRect(barX, barY, barWidth, HEALTH_BAR.height);
+    ctx.restore();
   }
 
   // Debug collider wireframes
