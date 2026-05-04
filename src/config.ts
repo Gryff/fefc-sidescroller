@@ -88,5 +88,14 @@ export const HEALTH = {
   BOSS: { current: 10, max: 10 },
 } as const;
 
+export const HEALTH_BAR = {
+  height: 6,
+  marginAboveCollider: 8,
+  backgroundColor: "#2a0a0a",
+  fillColor: "#3ce03c",
+  borderColor: "#000000",
+  borderWidth: 1,
+} as const;
+
 export const DEBUG_COLLIDERS = false;
 
