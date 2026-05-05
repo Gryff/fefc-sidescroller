@@ -19,7 +19,6 @@ In scope:
 Explicitly **descoped**:
 - Invincibility frames — already a tracked follow-up in `spec.md`. Standing on a spike will deal damage every frame; level authors should treat spikes as instant-death until iframes land.
 - Duty-cycle hazards (only-damaging-while-extended). The animation always loops; the collider is always live. A future system can read `sprite.currentFrame` and add/remove `damage` to gate this.
-- Spike-on-platform variants — schema omits `y`; spikes always sit on `WORLD.groundY`. A `platformGroundY` override is a trivial future extension.
 - Non-spike obstacles (fire pits, falling rocks, etc.).
 
 ---
@@ -141,7 +140,7 @@ The collider covers only the spike tips — negative `offsetY` lifts the hitbox 
 export interface SpikeConfig {
   variant: SpikeVariant;
   x: number;        // world x (sprite center)
-  groundY: number;  // y where the sprite bottom should rest
+  groundY: number;  // world y where the sprite bottom should rest
   damage: number;
 }
 
@@ -186,6 +185,8 @@ export interface ObstacleEntity {
   subtype: "spikes";
   variant: SpikeVariant;
   x: number;
+  /** Signed offset from WORLD.groundY. Negative = above ground (e.g. on a platform). */
+  y: number;
   damage: number;
 }
 
@@ -198,7 +199,7 @@ export type LevelEntity =
 
 `subtype` is kept (mirrors `WalkerEntity`) so future obstacle kinds can be added without another top-level `type`. `variant` discriminates within the spike subtype.
 
-No `y` field — spikes always sit on `WORLD.groundY`. Adding a `platformGroundY` override later is a one-line change.
+`y` follows the same ground-relative convention as `WalkerEntity` / `BossEntity` / `PlatformEntity`: `0` rests the sprite bottom on `WORLD.groundY`; a negative value lifts the spike onto a platform. The loader resolves it to a world Y the same way it does for everything else (`WORLD.groundY + entity.y`).
 
 ### `src/level/level-loader.ts`
 
@@ -211,7 +212,7 @@ case "obstacle":
       await createSpike({
         variant: entity.variant,
         x: entity.x,
-        groundY: WORLD.groundY,
+        groundY: worldY,
         damage: entity.damage,
       });
       break;
@@ -260,12 +261,12 @@ Spikes are static. No new system, no new tick. `updateSpriteAnimation` already l
 Drop a few spikes into `public/levels/level-1.json` between existing platforms for manual testing:
 
 ```json
-{ "type": "obstacle", "subtype": "spikes", "variant": "small_metal", "x": 720,  "damage": 1 },
-{ "type": "obstacle", "subtype": "spikes", "variant": "long_wood",   "x": 1450, "damage": 1 },
-{ "type": "obstacle", "subtype": "spikes", "variant": "small_wood",  "x": 2200, "damage": 1 }
+{ "type": "obstacle", "subtype": "spikes", "variant": "small_metal", "x": 720,  "y": 0, "damage": 1 },
+{ "type": "obstacle", "subtype": "spikes", "variant": "long_wood",   "x": 1450, "y": 0, "damage": 1 },
+{ "type": "obstacle", "subtype": "spikes", "variant": "small_wood",  "x": 2200, "y": 0, "damage": 1 }
 ```
 
-Position them on the ground between platforms so they're easy to walk into and equally easy to jump over.
+Position them on the ground between platforms (`y: 0`) so they're easy to walk into and equally easy to jump over. Authors who want a spike on top of a platform pass a negative `y` matching the platform's `y` (e.g. `y: -82` to crown a `y: -70` / `height: 24` platform).
 
 ---
 
@@ -273,7 +274,7 @@ Position them on the ground between platforms so they're easy to walk into and e
 
 ### `src/__tests__/level-loader.test.ts` — extend
 
-Add a case for an obstacle fixture: spawn → `obstacleTag`, `damage`, `collider` (with `layer === COLLISION_LAYER.OBSTACLE` and `mask === COLLISION_MASK.OBSTACLE`), `position` (y = `groundY − frameHeight/2` for the chosen variant) all populated. Mock `createSprite` like the existing boss test does.
+Add a case for an obstacle fixture: spawn → `obstacleTag`, `damage`, `collider` (with `layer === COLLISION_LAYER.OBSTACLE` and `mask === COLLISION_MASK.OBSTACLE`), `position` (y = `WORLD.groundY + entity.y − frameHeight/2` for the chosen variant) all populated. Cover both `y: 0` (ground) and a negative `y` (e.g. spike on top of a platform) to lock in the offset resolution. Mock `createSprite` like the existing boss test does.
 
 ### `src/__tests__/health-damage.test.ts` — extend
 
@@ -308,7 +309,7 @@ No dedicated obstacle-system test — there is no obstacle system.
 
 - **Dedicated `OBSTACLE` layer over `ENEMY` reuse** — keeps spikes immune to projectiles and transparent to walkers without special-casing in `health-damage` or the collision system.
 - **No `health`, no `solid`** — spikes are walk-through and indestructible. They damage on overlap, that's it.
-- **Ground-locked spawn** — schema omits `y` to match the "floor spikes" framing. A `platformGroundY` override slots in cleanly when the first elevated spike is needed.
+- **Ground-relative `y`** — `ObstacleEntity.y` follows the same signed-offset-from-`WORLD.groundY` convention as platforms / walkers / boss. `y: 0` is the floor-spike default; negative values place a spike on top of a platform without any new schema field. Keeps the entity union uniform and avoids a special case in the loader's `worldY` resolution.
 - **Always-damaging animation** — visual loop only; no duty cycle. A retracting/rising hazard (damages only when extended) is a follow-up that just needs a small system reading `sprite[id].currentFrame` and adding/removing `damage[id]`.
 - **iframes still missing** — instant-death on stand is a known issue tracked in `spec.md`, not unique to spikes. Damage values stay at 1 until iframes land.
 - **Asset pipeline** — offline composite (one `imagemagick` line per variant) keeps the renderer and animation system untouched. Runtime composite was considered and rejected as unnecessary tooling complexity at this scale.
