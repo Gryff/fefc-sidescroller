@@ -6,6 +6,7 @@ import {
   COLLISION_LAYER,
   COLLISION_MASK,
   HEALTH,
+  SPIKES,
 } from "../config";
 import {
   collider,
@@ -14,6 +15,7 @@ import {
   enemyTag,
   health,
   input,
+  obstacleTag,
   patrolAI,
   playerTag,
   position,
@@ -41,6 +43,39 @@ export interface WalkerConfig {
   range: number;
   speed: number;
   direction: Direction;
+}
+
+export interface SpikeConfig {
+  x: number; // world x (sprite center)
+  groundY: number; // world y where the sprite bottom should rest
+  damage: number;
+}
+
+// Static, indestructible, walk-through-but-painful. No velocity, no health,
+// no solid. A single static frame for now; animation is a follow-up.
+export async function createSpike(config: SpikeConfig): Promise<void> {
+  const id = createEntity();
+
+  const spikeSprite = await createSprite(
+    SPIKES.sprite,
+    SPIKES.frameWidth,
+    SPIKES.frameHeight,
+    1,
+  );
+  spikeSprite.scale = SPIKES.scale;
+  sprite[id] = spikeSprite;
+
+  position[id] = {
+    x: config.x,
+    y: config.groundY - (SPIKES.frameHeight * SPIKES.scale) / 2,
+  };
+  collider[id] = {
+    ...SPIKES.collider,
+    layer: COLLISION_LAYER.OBSTACLE,
+    mask: COLLISION_MASK.OBSTACLE,
+  };
+  damage[id] = { amount: config.damage };
+  obstacleTag[id] = true;
 }
 
 export function createPlatform(

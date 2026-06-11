@@ -7,7 +7,11 @@ export interface LevelData {
   entities: LevelEntity[];
 }
 
-export type LevelEntity = PlatformEntity | BossEntity | WalkerEntity;
+export type LevelEntity =
+  | PlatformEntity
+  | BossEntity
+  | WalkerEntity
+  | ObstacleEntity;
 
 export interface PlatformEntity {
   type: "platform";
@@ -29,6 +33,15 @@ export interface BossEntity {
   spriteWidth: number;
   spriteHeight: number;
   frameCount: number;
+}
+
+export interface ObstacleEntity {
+  type: "obstacle";
+  subtype: "spikes";
+  x: number;
+  /** Signed offset from WORLD.groundY. Negative = above ground (e.g. on a platform). */
+  y: number;
+  damage: number;
 }
 
 export interface WalkerEntity {

@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { COLLISION_LAYER, COLLISION_MASK, WORLD, setWorld } from "../config";
+import { COLLISION_LAYER, COLLISION_MASK, SPIKES, WORLD, setWorld } from "../config";
 import {
   collider,
   damage,
   enemyTag,
   health,
+  obstacleTag,
   patrolAI,
   playerTag,
   position,
@@ -135,6 +136,60 @@ describe("spawnLevel", () => {
     });
     expect(collider[walkerId].layer).toBe(COLLISION_LAYER.ENEMY);
     expect(collider[walkerId].mask).toBe(COLLISION_MASK.ENEMY);
+  });
+
+  it("spawns spikes with obstacle tag, damage, and obstacle-layer collider", async () => {
+    const data = makeFixture({
+      entities: [
+        { type: "obstacle", subtype: "spikes", x: 720, y: 0, damage: 1 },
+      ],
+    });
+
+    await spawnLevel(data);
+
+    const spikeId = Number(Object.keys(obstacleTag)[0]);
+    expect(obstacleTag[spikeId]).toBe(true);
+    expect(damage[spikeId]).toEqual({ amount: 1 });
+    expect(collider[spikeId].layer).toBe(COLLISION_LAYER.OBSTACLE);
+    expect(collider[spikeId].mask).toBe(COLLISION_MASK.OBSTACLE);
+    // Sprite bottom rests at groundY: center is half the scaled height above.
+    expect(position[spikeId]).toEqual({
+      x: 720,
+      y: groundY - (SPIKES.frameHeight * SPIKES.scale) / 2,
+    });
+    expect(health[spikeId]).toBeUndefined();
+    expect(solid[spikeId]).toBeUndefined();
+  });
+
+  it("resolves a negative spike y as an offset above ground (e.g. on a platform)", async () => {
+    const data = makeFixture({
+      entities: [
+        { type: "obstacle", subtype: "spikes", x: 500, y: -82, damage: 1 },
+      ],
+    });
+
+    await spawnLevel(data);
+
+    const spikeId = Number(Object.keys(obstacleTag)[0]);
+    expect(position[spikeId]).toEqual({
+      x: 500,
+      y: groundY - 82 - (SPIKES.frameHeight * SPIKES.scale) / 2,
+    });
+  });
+
+  it("throws a descriptive error for unknown obstacle subtype", async () => {
+    const data = makeFixture({
+      entities: [
+        {
+          type: "obstacle",
+          subtype: "firepit",
+        } as unknown as LevelData["entities"][number],
+      ],
+    });
+
+    await expect(spawnLevel(data)).rejects.toThrow(
+      "Unknown obstacle subtype: 'firepit'",
+    );
   });
 
   it("throws a descriptive error for unknown enemy subtype", async () => {

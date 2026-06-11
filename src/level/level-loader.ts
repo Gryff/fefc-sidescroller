@@ -3,6 +3,7 @@ import {
   createAssetPackPlayer,
   createBoss,
   createPlatform,
+  createSpike,
   createWalker,
 } from "../ecs/entities";
 import type { LevelData } from "./level-schema";
@@ -72,6 +73,21 @@ export async function spawnLevel(data: LevelData): Promise<void> {
           default: {
             const bad = entity as { subtype: string };
             throw new Error(`Unknown enemy subtype: '${bad.subtype}'`);
+          }
+        }
+        break;
+      case "obstacle":
+        switch (entity.subtype) {
+          case "spikes":
+            await createSpike({
+              x: entity.x,
+              groundY: worldY,
+              damage: entity.damage,
+            });
+            break;
+          default: {
+            const bad = entity as { subtype: string };
+            throw new Error(`Unknown obstacle subtype: '${bad.subtype}'`);
           }
         }
         break;

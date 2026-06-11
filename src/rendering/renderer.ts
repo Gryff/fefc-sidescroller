@@ -125,6 +125,11 @@ export function render(
     }
   }
 
+  // Obstacles (spikes)
+  for (const id of entitiesWith("obstacleTag", "sprite")) {
+    drawSprite(ctx, id, cameraX);
+  }
+
   // Projectiles
   for (const projId in projectile) {
     if (projectile[projId] && projectile[projId].active) {

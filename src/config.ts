@@ -63,17 +63,30 @@ export const BACKGROUND = {
 } as const;
 
 export const COLLISION_LAYER = {
-  PLAYER: 1 << 0, // 0b0001
-  ENEMY: 1 << 1, // 0b0010
-  PROJECTILE: 1 << 2, // 0b0100
-  PLATFORM: 1 << 3, // 0b1000
+  PLAYER: 1 << 0, // 0b00001
+  ENEMY: 1 << 1, // 0b00010
+  PROJECTILE: 1 << 2, // 0b00100
+  PLATFORM: 1 << 3, // 0b01000
+  OBSTACLE: 1 << 4, // 0b10000
 } as const;
 
 export const COLLISION_MASK = {
-  PLAYER: COLLISION_LAYER.ENEMY | COLLISION_LAYER.PLATFORM,
+  PLAYER: COLLISION_LAYER.ENEMY | COLLISION_LAYER.PLATFORM | COLLISION_LAYER.OBSTACLE,
   ENEMY: COLLISION_LAYER.PLAYER | COLLISION_LAYER.PROJECTILE | COLLISION_LAYER.PLATFORM,
   PROJECTILE: COLLISION_LAYER.ENEMY,
   PLATFORM: COLLISION_LAYER.PLAYER | COLLISION_LAYER.ENEMY,
+  OBSTACLE: COLLISION_LAYER.PLAYER,
+} as const;
+
+export const SPIKES = {
+  sprite: "/spikes.png",
+  frameWidth: 21,
+  frameHeight: 21,
+  scale: 3,
+  // The art occupies only the bottom 11px of the 21px frame; the collider
+  // covers just that region (scaled) so the empty top of the sprite is
+  // non-damaging.
+  collider: { width: 60, height: 33, offsetX: 0, offsetY: 15 },
 } as const;
 
 export const COLLIDER_SIZE = {

@@ -8,6 +8,7 @@ import type {
   Grounded,
   Health,
   Input,
+  ObstacleTag,
   PatrolAI,
   PlayerTag,
   Position,
@@ -31,6 +32,7 @@ export const projectile: Projectile = {};
 export const projectilePool: EntityId[] = [];
 export const playerTag: PlayerTag = {};
 export const enemyTag: EnemyTag = {};
+export const obstacleTag: ObstacleTag = {};
 export const collider: Collider = {};
 export const collisionEvents: CollisionEvents = {};
 export const health: Health = {};
@@ -48,6 +50,7 @@ export const allStores = {
   projectile,
   playerTag,
   enemyTag,
+  obstacleTag,
   collider,
   collisionEvents,
   health,
