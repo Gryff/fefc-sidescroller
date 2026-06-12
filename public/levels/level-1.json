@@ -9,6 +9,9 @@
     { "type": "platform", "x": 1600, "y": -80, "width": 140, "height": 24 },
     { "type": "platform", "x": 2000, "y": -70, "width": 200, "height": 24 },
     { "type": "platform", "x": 2450, "y": -85, "width": 180, "height": 24 },
+    { "type": "obstacle", "subtype": "spikes", "x": 720,  "y": 0, "damage": 1 },
+    { "type": "obstacle", "subtype": "spikes", "x": 1450, "y": 0, "damage": 1 },
+    { "type": "obstacle", "subtype": "spikes", "x": 2200, "y": 0, "damage": 1 },
     {
       "type": "enemy",
       "subtype": "walker",

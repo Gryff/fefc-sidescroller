@@ -143,6 +143,95 @@ describe("updateCollision", () => {
     expect(collisionEvents[proj].collidingWith).toContain(enemy);
   });
 
+  it("detects collision between player and obstacle", () => {
+    const player = createEntity();
+    position[player] = { x: 100, y: 100 };
+    collider[player] = {
+      width: 40,
+      height: 50,
+      offsetX: 0,
+      offsetY: 0,
+      layer: COLLISION_LAYER.PLAYER,
+      mask: COLLISION_MASK.PLAYER,
+    };
+
+    const spike = createEntity();
+    position[spike] = { x: 110, y: 100 };
+    collider[spike] = {
+      width: 60,
+      height: 33,
+      offsetX: 0,
+      offsetY: 0,
+      layer: COLLISION_LAYER.OBSTACLE,
+      mask: COLLISION_MASK.OBSTACLE,
+    };
+
+    updateCollision();
+
+    expect(collisionEvents[player]).toBeDefined();
+    expect(collisionEvents[player].collidingWith).toContain(spike);
+    expect(collisionEvents[spike]).toBeDefined();
+    expect(collisionEvents[spike].collidingWith).toContain(player);
+  });
+
+  it("does not detect collision between projectile and obstacle (mask filtering)", () => {
+    const proj = createEntity();
+    position[proj] = { x: 100, y: 100 };
+    collider[proj] = {
+      width: 32,
+      height: 32,
+      offsetX: 0,
+      offsetY: 0,
+      layer: COLLISION_LAYER.PROJECTILE,
+      mask: COLLISION_MASK.PROJECTILE,
+    };
+
+    const spike = createEntity();
+    position[spike] = { x: 100, y: 100 };
+    collider[spike] = {
+      width: 60,
+      height: 33,
+      offsetX: 0,
+      offsetY: 0,
+      layer: COLLISION_LAYER.OBSTACLE,
+      mask: COLLISION_MASK.OBSTACLE,
+    };
+
+    updateCollision();
+
+    expect(collisionEvents[proj]).toBeUndefined();
+    expect(collisionEvents[spike]).toBeUndefined();
+  });
+
+  it("does not detect collision between enemy and obstacle (mask filtering)", () => {
+    const walker = createEntity();
+    position[walker] = { x: 100, y: 100 };
+    collider[walker] = {
+      width: 40,
+      height: 40,
+      offsetX: 0,
+      offsetY: 0,
+      layer: COLLISION_LAYER.ENEMY,
+      mask: COLLISION_MASK.ENEMY,
+    };
+
+    const spike = createEntity();
+    position[spike] = { x: 100, y: 100 };
+    collider[spike] = {
+      width: 60,
+      height: 33,
+      offsetX: 0,
+      offsetY: 0,
+      layer: COLLISION_LAYER.OBSTACLE,
+      mask: COLLISION_MASK.OBSTACLE,
+    };
+
+    updateCollision();
+
+    expect(collisionEvents[walker]).toBeUndefined();
+    expect(collisionEvents[spike]).toBeUndefined();
+  });
+
   it("does not report collision when entities are far apart", () => {
     const a = createEntity();
     position[a] = { x: 0, y: 0 };

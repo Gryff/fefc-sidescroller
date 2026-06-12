@@ -170,6 +170,31 @@ describe("updateHealthDamage", () => {
       expect(result.playerDied).toBe(true);
     });
 
+    it("damages the player on contact with an obstacle (no enemyTag)", () => {
+      const playerId = createEntity();
+      playerTag[playerId] = true;
+      health[playerId] = { current: 3, max: 3 };
+
+      const spikeId = createEntity();
+      damage[spikeId] = { amount: 1 };
+      collider[spikeId] = {
+        width: 60,
+        height: 33,
+        offsetX: 0,
+        offsetY: 15,
+        layer: COLLISION_LAYER.OBSTACLE,
+        mask: COLLISION_MASK.OBSTACLE,
+      };
+      collisionEvents[spikeId] = { collidingWith: [playerId] };
+
+      updateHealthDamage();
+
+      expect(health[playerId].current).toBe(2);
+      // The obstacle is indestructible: nothing about it changes.
+      expect(damage[spikeId]).toEqual({ amount: 1 });
+      expect(collider[spikeId]).toBeDefined();
+    });
+
     it("does not deal damage from an entity without a damage component", () => {
       const playerId = createEntity();
       playerTag[playerId] = true;

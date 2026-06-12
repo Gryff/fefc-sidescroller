@@ -1,15 +1,17 @@
 # Obstacles (Floor Spikes) Plan
 
-Implementation plan for **step 6** of `level-design-research.md`: static, animated environmental hazards loaded from level data that deal damage to the player on contact. Builds on the patterns established in `enemy-plan.md` (component-driven `Damage`, discriminated `LevelEntity` union, layer/mask collision).
+Implementation plan for **step 6** of `level-design-research.md`: static environmental hazards loaded from level data that deal damage to the player on contact. Builds on the patterns established in `enemy-plan.md` (component-driven `Damage`, discriminated `LevelEntity` union, layer/mask collision).
+
+> **Revision:** this plan originally assumed an animated spike asset pack (4 variants, 3–5 keyframes each). The actual asset is a single static image, `public/spikes.png`, so the variant registry and animation wiring were dropped. Spike animation (and per-variant art) is a follow-up; the schema and `createSpike` are shaped so it can be added without touching level data.
 
 ## Scope
 
-Introduces the **first non-enemy damage source** and the **first OBSTACLE collision layer**. The first concrete obstacle is the floor-spike asset pack (4 variants, 3–5 keyframes each).
+Introduces the **first non-enemy damage source** and the **first OBSTACLE collision layer**. The first concrete obstacle is a single static floor-spike image.
 
 In scope:
 - `OBSTACLE` collision layer + mask wiring
 - `ObstacleTag` component
-- `SPIKE_VARIANTS` registry (sheet path + frame geometry + collider per variant)
+- `SPIKES` config (sprite path + frame geometry + scale + collider)
 - `createSpike` entity helper
 - `"obstacle"` entity type in the level schema + loader branch
 - Renderer pass for obstacle sprites
@@ -17,40 +19,16 @@ In scope:
 - Tests: loader spawns obstacle, collision masks isolate spikes from walkers/projectiles, contact damage flows from a non-enemy `damage` source
 
 Explicitly **descoped**:
+- Spike animation — the current asset is one static frame (`frameCount: 1`). When animated sheets land, `createSpike` grows an `animations` block and `updateSpriteAnimation` picks it up for free; nothing else changes.
 - Invincibility frames — already a tracked follow-up in `spec.md`. Standing on a spike will deal damage every frame; level authors should treat spikes as instant-death until iframes land.
-- Duty-cycle hazards (only-damaging-while-extended). The animation always loops; the collider is always live. A future system can read `sprite.currentFrame` and add/remove `damage` to gate this.
+- Duty-cycle hazards (only-damaging-while-extended). The collider is always live. A future system can read `sprite.currentFrame` and add/remove `damage` to gate this once animation exists.
 - Non-spike obstacles (fire pits, falling rocks, etc.).
 
 ---
 
-## Asset Pack
+## Asset
 
-The uploaded zip provides four variants as individual keyframe PNGs:
-
-| variant | frame size | frames | source path in zip |
-|---|---|---|---|
-| `long_metal`  | 78 × 116 | 4 | `keyframes/long_metal/long_metal_spike_0[1-4].png` |
-| `small_metal` | 78 × 66  | 3 | `keyframes/small_metal/small_metal_spike_0[1-3].png` |
-| `long_wood`   | 64 × 183 | 5 | `keyframes/long_wood/long_wood_spike_0[1-5].png` |
-| `small_wood`  | 72 × 133 | 4 | `keyframes/small_wood/small_wood_spike_0[1-4].png` |
-
-The renderer reads one horizontal sprite sheet per `Sprite` (`sx = currentFrame * width`), so the per-frame PNGs need to be combined into one row per variant.
-
-### Decision: pre-composite offline
-
-Use `imagemagick` once per variant:
-
-```sh
-mkdir -p public/sprites/spikes
-convert keyframes/long_metal/long_metal_spike_*.png  +append public/sprites/spikes/long_metal.png
-convert keyframes/small_metal/small_metal_spike_*.png +append public/sprites/spikes/small_metal.png
-convert keyframes/long_wood/long_wood_spike_*.png    +append public/sprites/spikes/long_wood.png
-convert keyframes/small_wood/small_wood_spike_*.png  +append public/sprites/spikes/small_wood.png
-```
-
-Ship four flat sheets in `public/sprites/spikes/`. No code added; reuses `createSprite` + `updateSpriteAnimation` unchanged.
-
-**Alternative considered:** runtime composite via `OffscreenCanvas` (a helper that draws keyframe PNGs into a single image and returns a `Sprite[number]`). Viable but unnecessary at this scale — keyframes won't change frequently and the offline path produces deterministic, cacheable assets.
+`public/spikes.png` — a single 21 × 21 static frame: three spike tips occupying the bottom 11px of the frame, full width. Rendered at `scale: 3` (63 × 63 on screen) so it reads at the same size as the other scaled-up entities. No sprite-sheet compositing needed; `createSprite` with `frameCount: 1` handles it unchanged.
 
 ---
 
@@ -100,37 +78,27 @@ In `src/ecs/stores.ts`:
 
 ---
 
-## 3. Variant Registry
+## 3. Spike Config
 
 In `src/config.ts`, alongside `COLLIDER_SIZE`:
 
 ```ts
-export const SPIKE_VARIANTS = {
-  long_metal: {
-    sheet: "/sprites/spikes/long_metal.png",
-    frameWidth: 78, frameHeight: 116, frameCount: 4, frameDuration: 120,
-    collider: { width: 60, height: 35, offsetX: 0, offsetY: -40 },
-  },
-  small_metal: {
-    sheet: "/sprites/spikes/small_metal.png",
-    frameWidth: 78, frameHeight: 66,  frameCount: 3, frameDuration: 140,
-    collider: { width: 60, height: 22, offsetX: 0, offsetY: -16 },
-  },
-  long_wood: {
-    sheet: "/sprites/spikes/long_wood.png",
-    frameWidth: 64, frameHeight: 183, frameCount: 5, frameDuration: 110,
-    collider: { width: 50, height: 55, offsetX: 0, offsetY: -64 },
-  },
-  small_wood: {
-    sheet: "/sprites/spikes/small_wood.png",
-    frameWidth: 72, frameHeight: 133, frameCount: 4, frameDuration: 130,
-    collider: { width: 56, height: 40, offsetX: 0, offsetY: -46 },
-  },
+export const SPIKES = {
+  sprite: "/spikes.png",
+  frameWidth: 21,
+  frameHeight: 21,
+  scale: 3,
+  // Entities rest with position.y === WORLD.groundY, but sprites draw centred
+  // on position, so the player's feet (64px frame at scale 2) land 64px below
+  // groundY. Spikes align their sprite bottom to that visible floor line.
+  floorOffset: 64,
+  // The hitbox sits above the visible tips so it overlaps the player's
+  // collider, which is centred near groundY rather than at the drawn feet.
+  collider: { width: 60, height: 40, offsetX: 0, offsetY: -12 },
 } as const;
-export type SpikeVariant = keyof typeof SPIKE_VARIANTS;
 ```
 
-The collider covers only the spike tips — negative `offsetY` lifts the hitbox above the sprite center so the lower decorative portion of the sprite is non-damaging. Numbers are starting points; tune with `DEBUG_COLLIDERS = true`.
+The engine rests entity *centers* on `WORLD.groundY` and draws sprites centred on `position`, so the player's drawn feet sit `(64 × 2) / 2 = 64px` below `groundY`. `floorOffset` plants the spike sprite on that visible floor line, while the collider is lifted (negative `offsetY`) back up into the band the player's collider actually occupies. If the engine ever switches to feet-anchored sprites, `floorOffset` drops back to 0. Numbers are starting points; tune with `DEBUG_COLLIDERS = true`. When animated variants land, this single const grows back into the per-variant registry the original plan sketched.
 
 ---
 
@@ -138,27 +106,27 @@ The collider covers only the spike tips — negative `offsetY` lifts the hitbox 
 
 ```ts
 export interface SpikeConfig {
-  variant: SpikeVariant;
   x: number;        // world x (sprite center)
   groundY: number;  // world y where the sprite bottom should rest
   damage: number;
 }
 
 export async function createSpike(config: SpikeConfig): Promise<void> {
-  const v = SPIKE_VARIANTS[config.variant];
   const id = createEntity();
 
-  const s = await createSprite(v.sheet, v.frameWidth, v.frameHeight, v.frameCount);
-  s.animations = {
-    pulse: { row: 0, frameCount: v.frameCount, frameDuration: v.frameDuration, loop: true },
-  };
-  s.currentAnimation = "pulse";
-  s.animationElapsed = 0;
-  sprite[id] = s;
+  const spikeSprite = await createSprite(
+    SPIKES.sprite, SPIKES.frameWidth, SPIKES.frameHeight, 1,
+  );
+  spikeSprite.scale = SPIKES.scale;
+  sprite[id] = spikeSprite;
 
-  position[id] = { x: config.x, y: config.groundY - v.frameHeight / 2 };
+  position[id] = {
+    x: config.x,
+    y: config.groundY + SPIKES.floorOffset
+      - (SPIKES.frameHeight * SPIKES.scale) / 2,
+  };
   collider[id] = {
-    ...v.collider,
+    ...SPIKES.collider,
     layer: COLLISION_LAYER.OBSTACLE,
     mask: COLLISION_MASK.OBSTACLE,
   };
@@ -167,7 +135,7 @@ export async function createSpike(config: SpikeConfig): Promise<void> {
 }
 ```
 
-No `velocity`, no `health`, no `solid`. Static, indestructible, walk-through-but-painful. The position calculation centers the sprite vertically such that its bottom edge rests at `groundY` (renderer draws sprites centered on `position`).
+No `velocity`, no `health`, no `solid`. Static, indestructible, walk-through-but-painful. The position calculation rests the sprite's bottom edge on the visible floor line (`groundY + SPIKES.floorOffset` — see section 3). `frameCount` is hard-coded to 1 — a static frame — until animated sheets exist.
 
 ---
 
@@ -178,12 +146,9 @@ No `velocity`, no `health`, no `solid`. Static, indestructible, walk-through-but
 Extend the discriminated union:
 
 ```ts
-import type { SpikeVariant } from "../config";
-
 export interface ObstacleEntity {
   type: "obstacle";
   subtype: "spikes";
-  variant: SpikeVariant;
   x: number;
   /** Signed offset from WORLD.groundY. Negative = above ground (e.g. on a platform). */
   y: number;
@@ -197,7 +162,7 @@ export type LevelEntity =
   | ObstacleEntity;
 ```
 
-`subtype` is kept (mirrors `WalkerEntity`) so future obstacle kinds can be added without another top-level `type`. `variant` discriminates within the spike subtype.
+`subtype` is kept (mirrors `WalkerEntity`) so future obstacle kinds can be added without another top-level `type`. A `variant` field can be added later when multiple spike sprites exist.
 
 `y` follows the same ground-relative convention as `WalkerEntity` / `BossEntity` / `PlatformEntity`: `0` rests the sprite bottom on `WORLD.groundY`; a negative value lifts the spike onto a platform. The loader resolves it to a world Y the same way it does for everything else (`WORLD.groundY + entity.y`).
 
@@ -210,7 +175,6 @@ case "obstacle":
   switch (entity.subtype) {
     case "spikes":
       await createSpike({
-        variant: entity.variant,
         x: entity.x,
         groundY: worldY,
         damage: entity.damage,
@@ -252,7 +216,7 @@ The system already iterates `damage` + `collisionEvents` and applies the dealer'
 
 ## 8. Game Loop — No Change
 
-Spikes are static. No new system, no new tick. `updateSpriteAnimation` already loops over every entity in `sprite`, so the spike "pulse" animates for free.
+Spikes are static. No new system, no new tick. With a single frame and no `animations` map, `updateSpriteAnimation` skips them; when animated sheets land, the same system picks them up for free.
 
 ---
 
@@ -261,9 +225,9 @@ Spikes are static. No new system, no new tick. `updateSpriteAnimation` already l
 Drop a few spikes into `public/levels/level-1.json` between existing platforms for manual testing:
 
 ```json
-{ "type": "obstacle", "subtype": "spikes", "variant": "small_metal", "x": 720,  "y": 0, "damage": 1 },
-{ "type": "obstacle", "subtype": "spikes", "variant": "long_wood",   "x": 1450, "y": 0, "damage": 1 },
-{ "type": "obstacle", "subtype": "spikes", "variant": "small_wood",  "x": 2200, "y": 0, "damage": 1 }
+{ "type": "obstacle", "subtype": "spikes", "x": 720,  "y": 0, "damage": 1 },
+{ "type": "obstacle", "subtype": "spikes", "x": 1450, "y": 0, "damage": 1 },
+{ "type": "obstacle", "subtype": "spikes", "x": 2200, "y": 0, "damage": 1 }
 ```
 
 Position them on the ground between platforms (`y: 0`) so they're easy to walk into and equally easy to jump over. Authors who want a spike on top of a platform pass a negative `y` matching the platform's `y` (e.g. `y: -82` to crown a `y: -70` / `height: 24` platform).
@@ -274,7 +238,7 @@ Position them on the ground between platforms (`y: 0`) so they're easy to walk i
 
 ### `src/__tests__/level-loader.test.ts` — extend
 
-Add a case for an obstacle fixture: spawn → `obstacleTag`, `damage`, `collider` (with `layer === COLLISION_LAYER.OBSTACLE` and `mask === COLLISION_MASK.OBSTACLE`), `position` (y = `WORLD.groundY + entity.y − frameHeight/2` for the chosen variant) all populated. Cover both `y: 0` (ground) and a negative `y` (e.g. spike on top of a platform) to lock in the offset resolution. Mock `createSprite` like the existing boss test does.
+Add a case for an obstacle fixture: spawn → `obstacleTag`, `damage`, `collider` (with `layer === COLLISION_LAYER.OBSTACLE` and `mask === COLLISION_MASK.OBSTACLE`), `position` (y = `WORLD.groundY + entity.y + floorOffset − (frameHeight × scale)/2`) all populated. Cover both `y: 0` (ground) and a negative `y` (e.g. spike on top of a platform) to lock in the offset resolution. Mock `createSprite` like the existing boss test does.
 
 ### `src/__tests__/health-damage.test.ts` — extend
 
@@ -292,16 +256,15 @@ No dedicated obstacle-system test — there is no obstacle system.
 
 ## 11. Order of Operations
 
-1. Pre-composite the four spike sheets via `imagemagick` into `public/sprites/spikes/`.
-2. Add `OBSTACLE` to `COLLISION_LAYER` / `COLLISION_MASK`; expand `PLAYER` mask.
-3. Add `ObstacleTag` to `components.ts`; wire `obstacleTag` into `stores.ts` + `allStores`.
-4. Add `SPIKE_VARIANTS` registry + `SpikeVariant` export to `config.ts`.
-5. Add `createSpike` to `entities.ts`.
-6. Add `ObstacleEntity` to `level-schema.ts`; add `"obstacle"` branch to `spawnLevel`.
-7. Add the obstacle render pass to `renderer.ts`.
-8. Add spikes to `public/levels/level-1.json`.
-9. Tests — loader extension, collision-mask isolation, and a contact-damage assertion for an obstacle dealer.
-10. Manual verification with `DEBUG_COLLIDERS = true`: spikes animate, block nothing, hurt the player on contact, ignore projectiles, ignore walkers. Tune the per-variant collider geometry until the hitboxes match the visible tips.
+1. Add `OBSTACLE` to `COLLISION_LAYER` / `COLLISION_MASK`; expand `PLAYER` mask.
+2. Add `ObstacleTag` to `components.ts`; wire `obstacleTag` into `stores.ts` + `allStores`.
+3. Add the `SPIKES` config to `config.ts`.
+4. Add `createSpike` to `entities.ts`.
+5. Add `ObstacleEntity` to `level-schema.ts`; add `"obstacle"` branch to `spawnLevel`.
+6. Add the obstacle render pass to `renderer.ts`.
+7. Add spikes to `public/levels/level-1.json`.
+8. Tests — loader extension, collision-mask isolation, and a contact-damage assertion for an obstacle dealer.
+9. Manual verification with `DEBUG_COLLIDERS = true`: spikes render, block nothing, hurt the player on contact, ignore projectiles, ignore walkers. Tune `SPIKES.collider` / `SPIKES.scale` until the hitbox matches the visible tips.
 
 ---
 
@@ -310,6 +273,6 @@ No dedicated obstacle-system test — there is no obstacle system.
 - **Dedicated `OBSTACLE` layer over `ENEMY` reuse** — keeps spikes immune to projectiles and transparent to walkers without special-casing in `health-damage` or the collision system.
 - **No `health`, no `solid`** — spikes are walk-through and indestructible. They damage on overlap, that's it.
 - **Ground-relative `y`** — `ObstacleEntity.y` follows the same signed-offset-from-`WORLD.groundY` convention as platforms / walkers / boss. `y: 0` is the floor-spike default; negative values place a spike on top of a platform without any new schema field. Keeps the entity union uniform and avoids a special case in the loader's `worldY` resolution.
-- **Always-damaging animation** — visual loop only; no duty cycle. A retracting/rising hazard (damages only when extended) is a follow-up that just needs a small system reading `sprite[id].currentFrame` and adding/removing `damage[id]`.
+- **Static frame for now** — the original plan's animated variants were dropped because the shipped asset is one static PNG. Animation is purely additive later: composite the keyframe sheets, grow `SPIKES` into a variant registry, and give the sprite an `animations` map in `createSpike`. Schema and level data only change if a `variant` field is wanted.
+- **Always-damaging** — no duty cycle. A retracting/rising hazard (damages only when extended) is a follow-up that needs animation first, plus a small system reading `sprite[id].currentFrame` and adding/removing `damage[id]`.
 - **iframes still missing** — instant-death on stand is a known issue tracked in `spec.md`, not unique to spikes. Damage values stay at 1 until iframes land.
-- **Asset pipeline** — offline composite (one `imagemagick` line per variant) keeps the renderer and animation system untouched. Runtime composite was considered and rejected as unnecessary tooling complexity at this scale.

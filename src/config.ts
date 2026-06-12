@@ -63,17 +63,33 @@ export const BACKGROUND = {
 } as const;
 
 export const COLLISION_LAYER = {
-  PLAYER: 1 << 0, // 0b0001
-  ENEMY: 1 << 1, // 0b0010
-  PROJECTILE: 1 << 2, // 0b0100
-  PLATFORM: 1 << 3, // 0b1000
+  PLAYER: 1 << 0, // 0b00001
+  ENEMY: 1 << 1, // 0b00010
+  PROJECTILE: 1 << 2, // 0b00100
+  PLATFORM: 1 << 3, // 0b01000
+  OBSTACLE: 1 << 4, // 0b10000
 } as const;
 
 export const COLLISION_MASK = {
-  PLAYER: COLLISION_LAYER.ENEMY | COLLISION_LAYER.PLATFORM,
+  PLAYER: COLLISION_LAYER.ENEMY | COLLISION_LAYER.PLATFORM | COLLISION_LAYER.OBSTACLE,
   ENEMY: COLLISION_LAYER.PLAYER | COLLISION_LAYER.PROJECTILE | COLLISION_LAYER.PLATFORM,
   PROJECTILE: COLLISION_LAYER.ENEMY,
   PLATFORM: COLLISION_LAYER.PLAYER | COLLISION_LAYER.ENEMY,
+  OBSTACLE: COLLISION_LAYER.PLAYER,
+} as const;
+
+export const SPIKES = {
+  sprite: "/spikes.png",
+  frameWidth: 21,
+  frameHeight: 21,
+  scale: 3,
+  // Entities rest with position.y === WORLD.groundY, but sprites draw centred
+  // on position, so the player's feet (64px frame at scale 2) land 64px below
+  // groundY. Spikes align their sprite bottom to that visible floor line.
+  floorOffset: 64,
+  // The hitbox sits above the visible tips so it overlaps the player's
+  // collider, which is centred near groundY rather than at the drawn feet.
+  collider: { width: 60, height: 40, offsetX: 0, offsetY: -12 },
 } as const;
 
 export const COLLIDER_SIZE = {
