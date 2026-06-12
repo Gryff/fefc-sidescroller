@@ -88,14 +88,17 @@ export const SPIKES = {
   frameWidth: 21,
   frameHeight: 21,
   scale: 3,
-  // The art occupies only the bottom 11px of the 21px frame; the collider
-  // covers just that region (scaled) so the empty top of the sprite is
-  // non-damaging.
-  collider: { width: 60, height: 33, offsetX: 0, offsetY: 15 },
+  // Entities rest with position.y === WORLD.groundY, but sprites draw centred
+  // on position, so the player's feet (64px frame at scale 2) land 64px below
+  // groundY. Spikes align their sprite bottom to that visible floor line.
+  floorOffset: 64,
+  // The hitbox sits above the visible tips so it overlaps the player's
+  // collider, which is centred near groundY rather than at the drawn feet.
+  collider: { width: 60, height: 40, offsetX: 0, offsetY: -12 },
 } as const;
 ```
 
-The collider covers only the spike art — positive `offsetY` pushes the hitbox to the bottom of the sprite where the spikes are drawn. Numbers are starting points; tune with `DEBUG_COLLIDERS = true`. When animated variants land, this single const grows back into the per-variant registry the original plan sketched.
+The engine rests entity *centers* on `WORLD.groundY` and draws sprites centred on `position`, so the player's drawn feet sit `(64 × 2) / 2 = 64px` below `groundY`. `floorOffset` plants the spike sprite on that visible floor line, while the collider is lifted (negative `offsetY`) back up into the band the player's collider actually occupies. If the engine ever switches to feet-anchored sprites, `floorOffset` drops back to 0. Numbers are starting points; tune with `DEBUG_COLLIDERS = true`. When animated variants land, this single const grows back into the per-variant registry the original plan sketched.
 
 ---
 
@@ -119,7 +122,8 @@ export async function createSpike(config: SpikeConfig): Promise<void> {
 
   position[id] = {
     x: config.x,
-    y: config.groundY - (SPIKES.frameHeight * SPIKES.scale) / 2,
+    y: config.groundY + SPIKES.floorOffset
+      - (SPIKES.frameHeight * SPIKES.scale) / 2,
   };
   collider[id] = {
     ...SPIKES.collider,
@@ -131,7 +135,7 @@ export async function createSpike(config: SpikeConfig): Promise<void> {
 }
 ```
 
-No `velocity`, no `health`, no `solid`. Static, indestructible, walk-through-but-painful. The position calculation centers the sprite vertically such that its bottom edge rests at `groundY` (renderer draws sprites centered on `position`, scaled). `frameCount` is hard-coded to 1 — a static frame — until animated sheets exist.
+No `velocity`, no `health`, no `solid`. Static, indestructible, walk-through-but-painful. The position calculation rests the sprite's bottom edge on the visible floor line (`groundY + SPIKES.floorOffset` — see section 3). `frameCount` is hard-coded to 1 — a static frame — until animated sheets exist.
 
 ---
 
@@ -234,7 +238,7 @@ Position them on the ground between platforms (`y: 0`) so they're easy to walk i
 
 ### `src/__tests__/level-loader.test.ts` — extend
 
-Add a case for an obstacle fixture: spawn → `obstacleTag`, `damage`, `collider` (with `layer === COLLISION_LAYER.OBSTACLE` and `mask === COLLISION_MASK.OBSTACLE`), `position` (y = `WORLD.groundY + entity.y − (frameHeight × scale)/2`) all populated. Cover both `y: 0` (ground) and a negative `y` (e.g. spike on top of a platform) to lock in the offset resolution. Mock `createSprite` like the existing boss test does.
+Add a case for an obstacle fixture: spawn → `obstacleTag`, `damage`, `collider` (with `layer === COLLISION_LAYER.OBSTACLE` and `mask === COLLISION_MASK.OBSTACLE`), `position` (y = `WORLD.groundY + entity.y + floorOffset − (frameHeight × scale)/2`) all populated. Cover both `y: 0` (ground) and a negative `y` (e.g. spike on top of a platform) to lock in the offset resolution. Mock `createSprite` like the existing boss test does.
 
 ### `src/__tests__/health-damage.test.ts` — extend
 

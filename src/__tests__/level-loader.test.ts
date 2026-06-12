@@ -152,10 +152,11 @@ describe("spawnLevel", () => {
     expect(damage[spikeId]).toEqual({ amount: 1 });
     expect(collider[spikeId].layer).toBe(COLLISION_LAYER.OBSTACLE);
     expect(collider[spikeId].mask).toBe(COLLISION_MASK.OBSTACLE);
-    // Sprite bottom rests at groundY: center is half the scaled height above.
+    // Sprite bottom rests on the visible floor line (groundY + floorOffset):
+    // center is half the scaled height above it.
     expect(position[spikeId]).toEqual({
       x: 720,
-      y: groundY - (SPIKES.frameHeight * SPIKES.scale) / 2,
+      y: groundY + SPIKES.floorOffset - (SPIKES.frameHeight * SPIKES.scale) / 2,
     });
     expect(health[spikeId]).toBeUndefined();
     expect(solid[spikeId]).toBeUndefined();
@@ -173,7 +174,11 @@ describe("spawnLevel", () => {
     const spikeId = Number(Object.keys(obstacleTag)[0]);
     expect(position[spikeId]).toEqual({
       x: 500,
-      y: groundY - 82 - (SPIKES.frameHeight * SPIKES.scale) / 2,
+      y:
+        groundY -
+        82 +
+        SPIKES.floorOffset -
+        (SPIKES.frameHeight * SPIKES.scale) / 2,
     });
   });
 

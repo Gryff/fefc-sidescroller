@@ -47,7 +47,7 @@ export interface WalkerConfig {
 
 export interface SpikeConfig {
   x: number; // world x (sprite center)
-  groundY: number; // world y where the sprite bottom should rest
+  groundY: number; // world y of the floor line (entity rest position)
   damage: number;
 }
 
@@ -67,7 +67,10 @@ export async function createSpike(config: SpikeConfig): Promise<void> {
 
   position[id] = {
     x: config.x,
-    y: config.groundY - (SPIKES.frameHeight * SPIKES.scale) / 2,
+    y:
+      config.groundY +
+      SPIKES.floorOffset -
+      (SPIKES.frameHeight * SPIKES.scale) / 2,
   };
   collider[id] = {
     ...SPIKES.collider,

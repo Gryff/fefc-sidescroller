@@ -83,10 +83,13 @@ export const SPIKES = {
   frameWidth: 21,
   frameHeight: 21,
   scale: 3,
-  // The art occupies only the bottom 11px of the 21px frame; the collider
-  // covers just that region (scaled) so the empty top of the sprite is
-  // non-damaging.
-  collider: { width: 60, height: 33, offsetX: 0, offsetY: 15 },
+  // Entities rest with position.y === WORLD.groundY, but sprites draw centred
+  // on position, so the player's feet (64px frame at scale 2) land 64px below
+  // groundY. Spikes align their sprite bottom to that visible floor line.
+  floorOffset: 64,
+  // The hitbox sits above the visible tips so it overlaps the player's
+  // collider, which is centred near groundY rather than at the drawn feet.
+  collider: { width: 60, height: 40, offsetX: 0, offsetY: -12 },
 } as const;
 
 export const COLLIDER_SIZE = {
