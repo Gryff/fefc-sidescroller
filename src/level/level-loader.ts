@@ -2,6 +2,7 @@ import { setWorld, WORLD } from "../config";
 import {
   createAssetPackPlayer,
   createBoss,
+  createPickup,
   createPlatform,
   createSpike,
   createWalker,
@@ -88,6 +89,23 @@ export async function spawnLevel(data: LevelData): Promise<void> {
           default: {
             const bad = entity as { subtype: string };
             throw new Error(`Unknown obstacle subtype: '${bad.subtype}'`);
+          }
+        }
+        break;
+      case "pickup":
+        switch (entity.subtype) {
+          case "coin":
+          case "health":
+            await createPickup({
+              kind: entity.subtype,
+              value: entity.value,
+              x: entity.x,
+              groundY: worldY,
+            });
+            break;
+          default: {
+            const bad = entity as { subtype: string };
+            throw new Error(`Unknown pickup subtype: '${bad.subtype}'`);
           }
         }
         break;

@@ -11,6 +11,7 @@ import { resolveWorldGround, updatePhysics } from "./systems/physics";
 import { updateSpriteAnimation } from "./systems/sprite-animation";
 import { updateProjectiles } from "./systems/projectile";
 import { updateHealthDamage } from "./systems/health-damage";
+import { updatePickups } from "./systems/pickups";
 import { updateCamera } from "./systems/camera";
 
 // Target frame duration for 60fps. dt=1.0 at 60fps, 0.5 at 120fps, 2.0 at 30fps.
@@ -43,6 +44,8 @@ function update(
   if (playerDied) {
     state.gameRunning = false;
   }
+  const { scoreDelta } = updatePickups();
+  state.score += scoreDelta;
 
   // Animation
   updatePlayerAnimation(state.player, delta);

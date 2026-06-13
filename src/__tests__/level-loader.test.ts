@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { COLLISION_LAYER, COLLISION_MASK, SPIKES, WORLD, setWorld } from "../config";
+import {
+  COLLISION_LAYER,
+  COLLISION_MASK,
+  PICKUP_VISUAL,
+  SPIKES,
+  WORLD,
+  setWorld,
+} from "../config";
 import {
   collider,
   damage,
@@ -7,6 +14,8 @@ import {
   health,
   obstacleTag,
   patrolAI,
+  pickup,
+  pickupTag,
   playerTag,
   position,
   resetStores,
@@ -180,6 +189,61 @@ describe("spawnLevel", () => {
         SPIKES.floorOffset -
         (SPIKES.frameHeight * SPIKES.scale) / 2,
     });
+  });
+
+  it("spawns a coin pickup with pickup tag, value, and pickup-layer collider", async () => {
+    const data = makeFixture({
+      entities: [
+        { type: "pickup", subtype: "coin", x: 500, y: -120, value: 10 },
+      ],
+    });
+
+    await spawnLevel(data);
+
+    const pickupId = Number(Object.keys(pickupTag)[0]);
+    expect(pickupTag[pickupId]).toBe(true);
+    expect(pickup[pickupId]).toEqual({ kind: "coin", value: 10 });
+    expect(collider[pickupId].layer).toBe(COLLISION_LAYER.PICKUP);
+    expect(collider[pickupId].mask).toBe(COLLISION_MASK.PICKUP);
+    expect(position[pickupId]).toEqual({
+      x: 500,
+      y:
+        groundY -
+        120 +
+        PICKUP_VISUAL.floorOffset -
+        (PICKUP_VISUAL.frameHeight * PICKUP_VISUAL.scale) / 2,
+    });
+    // Collectibles carry no health and are not solid.
+    expect(health[pickupId]).toBeUndefined();
+    expect(solid[pickupId]).toBeUndefined();
+  });
+
+  it("spawns a health pickup carrying its restore value", async () => {
+    const data = makeFixture({
+      entities: [
+        { type: "pickup", subtype: "health", x: 800, y: 0, value: 2 },
+      ],
+    });
+
+    await spawnLevel(data);
+
+    const pickupId = Number(Object.keys(pickupTag)[0]);
+    expect(pickup[pickupId]).toEqual({ kind: "health", value: 2 });
+  });
+
+  it("throws a descriptive error for unknown pickup subtype", async () => {
+    const data = makeFixture({
+      entities: [
+        {
+          type: "pickup",
+          subtype: "mushroom",
+        } as unknown as LevelData["entities"][number],
+      ],
+    });
+
+    await expect(spawnLevel(data)).rejects.toThrow(
+      "Unknown pickup subtype: 'mushroom'",
+    );
   });
 
   it("throws a descriptive error for unknown obstacle subtype", async () => {

@@ -12,6 +12,12 @@
     { "type": "obstacle", "subtype": "spikes", "x": 720,  "y": 0, "damage": 1 },
     { "type": "obstacle", "subtype": "spikes", "x": 1450, "y": 0, "damage": 1 },
     { "type": "obstacle", "subtype": "spikes", "x": 2200, "y": 0, "damage": 1 },
+    { "type": "pickup", "subtype": "coin", "x": 500,  "y": -120, "value": 10 },
+    { "type": "pickup", "subtype": "coin", "x": 850,  "y": -135, "value": 10 },
+    { "type": "pickup", "subtype": "coin", "x": 1200, "y": -110, "value": 10 },
+    { "type": "pickup", "subtype": "coin", "x": 1600, "y": -130, "value": 10 },
+    { "type": "pickup", "subtype": "coin", "x": 2000, "y": -120, "value": 10 },
+    { "type": "pickup", "subtype": "health", "x": 2450, "y": -135, "value": 2 },
     {
       "type": "enemy",
       "subtype": "walker",

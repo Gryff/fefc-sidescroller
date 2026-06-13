@@ -36,6 +36,7 @@ const state: GameState = {
     active: false,
   },
   gameRunning: true,
+  score: 0,
 };
 
 const gameCtx: GameContext = {

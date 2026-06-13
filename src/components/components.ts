@@ -61,6 +61,18 @@ export type Projectile = Record<
 export type PlayerTag = Record<EntityId, true>;
 export type EnemyTag = Record<EntityId, true>;
 export type ObstacleTag = Record<EntityId, true>;
+export type PickupTag = Record<EntityId, true>;
+
+export type PickupKind = "coin" | "health";
+
+export type Pickup = Record<
+  EntityId,
+  {
+    kind: PickupKind;
+    /** Coins add this to the score; health restores this many points. */
+    value: number;
+  }
+>;
 export type Solid = Record<EntityId, true>;
 export type Grounded = Record<EntityId, true>;
 export type Flying = Record<EntityId, true>;

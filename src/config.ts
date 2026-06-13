@@ -68,14 +68,20 @@ export const COLLISION_LAYER = {
   PROJECTILE: 1 << 2, // 0b00100
   PLATFORM: 1 << 3, // 0b01000
   OBSTACLE: 1 << 4, // 0b10000
+  PICKUP: 1 << 5, // 0b100000
 } as const;
 
 export const COLLISION_MASK = {
-  PLAYER: COLLISION_LAYER.ENEMY | COLLISION_LAYER.PLATFORM | COLLISION_LAYER.OBSTACLE,
+  PLAYER:
+    COLLISION_LAYER.ENEMY |
+    COLLISION_LAYER.PLATFORM |
+    COLLISION_LAYER.OBSTACLE |
+    COLLISION_LAYER.PICKUP,
   ENEMY: COLLISION_LAYER.PLAYER | COLLISION_LAYER.PROJECTILE | COLLISION_LAYER.PLATFORM,
   PROJECTILE: COLLISION_LAYER.ENEMY,
   PLATFORM: COLLISION_LAYER.PLAYER | COLLISION_LAYER.ENEMY,
   OBSTACLE: COLLISION_LAYER.PLAYER,
+  PICKUP: COLLISION_LAYER.PLAYER,
 } as const;
 
 export const SPIKES = {
@@ -90,6 +96,17 @@ export const SPIKES = {
   // The hitbox sits above the visible tips so it overlaps the player's
   // collider, which is centred near groundY rather than at the drawn feet.
   collider: { width: 60, height: 40, offsetX: 0, offsetY: -12 },
+} as const;
+
+export const PICKUP_VISUAL = {
+  sprite: "/sprites/donut.png",
+  frameWidth: 48,
+  frameHeight: 48,
+  scale: 1,
+  // Pickups use the same visible floor line as spikes: a JSON y of 0 rests the
+  // sprite bottom on the floor; negative y floats it above ground or a platform.
+  floorOffset: 64,
+  collider: { width: 40, height: 40, offsetX: 0, offsetY: 0 },
 } as const;
 
 export const COLLIDER_SIZE = {

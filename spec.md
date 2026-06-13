@@ -27,11 +27,11 @@ A simple sidescroller game rendered on an HTML canvas. The player controls a spr
 - ✅ Collision Detection: Collisions with platforms, obstacles, and other entities.
 
 ### In Progress 🚧
-- 🚧 Level Design: JSON-driven level loader spawns platforms, walkers, obstacles, and the boss from `public/levels/level-1.json`. Still pending: pickups, multiple backgrounds/level layouts, level-completion win state.
+- 🚧 Level Design: JSON-driven level loader spawns platforms, walkers, obstacles, pickups (coins/health), and the boss from `public/levels/level-1.json`. Still pending: multiple backgrounds/level layouts, level-completion win state.
 
 ### Not Done 🙅‍♂️
 - 🙅‍♂️ Sound Effects & Music: Add audio feedback for actions and background music.
-- 🙅‍♂️ Score & Progression: Track player progress, collectibles, or score.
+- 🚧 Score & Progression: Coin/health pickups and a live score HUD are in. Still pending: persistence, high scores, and progress across levels.
 - 🙅‍♂️ Game States: Add menus, pause, restart, and win/lose conditions.
 - 🙅‍♂️ Resize Repositioning: Recompute entity positions on window resize so sprites stay at correct ground level and within canvas bounds.
 - 🙅‍♂️ Performance Optimization: Optimize rendering and asset management for smooth gameplay.

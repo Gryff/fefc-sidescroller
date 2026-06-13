@@ -1,11 +1,12 @@
 import { createAnimatedSprite, createSprite } from "../components/components";
-import type { Direction } from "../components/components";
+import type { Direction, PickupKind } from "../components/components";
 import {
   CHARACTER_ANIMATIONS,
   COLLIDER_SIZE,
   COLLISION_LAYER,
   COLLISION_MASK,
   HEALTH,
+  PICKUP_VISUAL,
   SPIKES,
 } from "../config";
 import {
@@ -17,6 +18,8 @@ import {
   input,
   obstacleTag,
   patrolAI,
+  pickup,
+  pickupTag,
   playerTag,
   position,
   solid,
@@ -79,6 +82,44 @@ export async function createSpike(config: SpikeConfig): Promise<void> {
   };
   damage[id] = { amount: config.damage };
   obstacleTag[id] = true;
+}
+
+export interface PickupConfig {
+  kind: PickupKind;
+  value: number;
+  x: number; // world x (sprite center)
+  groundY: number; // resolved world y of the floor line
+}
+
+// Collectible. Static, no health, no velocity, no solid — it sits in the world
+// until the player overlaps it, then the pickup system applies its effect and
+// destroys it. Coins use the donut sprite; health pickups reuse it for now.
+export async function createPickup(config: PickupConfig): Promise<void> {
+  const id = createEntity();
+
+  const pickupSprite = await createSprite(
+    PICKUP_VISUAL.sprite,
+    PICKUP_VISUAL.frameWidth,
+    PICKUP_VISUAL.frameHeight,
+    1,
+  );
+  pickupSprite.scale = PICKUP_VISUAL.scale;
+  sprite[id] = pickupSprite;
+
+  position[id] = {
+    x: config.x,
+    y:
+      config.groundY +
+      PICKUP_VISUAL.floorOffset -
+      (PICKUP_VISUAL.frameHeight * PICKUP_VISUAL.scale) / 2,
+  };
+  collider[id] = {
+    ...PICKUP_VISUAL.collider,
+    layer: COLLISION_LAYER.PICKUP,
+    mask: COLLISION_MASK.PICKUP,
+  };
+  pickup[id] = { kind: config.kind, value: config.value };
+  pickupTag[id] = true;
 }
 
 export function createPlatform(

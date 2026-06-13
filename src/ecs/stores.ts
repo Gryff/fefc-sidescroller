@@ -10,6 +10,8 @@ import type {
   Input,
   ObstacleTag,
   PatrolAI,
+  Pickup,
+  PickupTag,
   PlayerTag,
   Position,
   Projectile,
@@ -33,6 +35,8 @@ export const projectilePool: EntityId[] = [];
 export const playerTag: PlayerTag = {};
 export const enemyTag: EnemyTag = {};
 export const obstacleTag: ObstacleTag = {};
+export const pickupTag: PickupTag = {};
+export const pickup: Pickup = {};
 export const collider: Collider = {};
 export const collisionEvents: CollisionEvents = {};
 export const health: Health = {};
@@ -51,6 +55,8 @@ export const allStores = {
   playerTag,
   enemyTag,
   obstacleTag,
+  pickupTag,
+  pickup,
   collider,
   collisionEvents,
   health,

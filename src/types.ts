@@ -42,6 +42,7 @@ export interface GameState {
   joystick: JoystickState;
   fireButton: FireButtonState;
   gameRunning: boolean;
+  score: number;
 }
 
 export interface GameAssets {

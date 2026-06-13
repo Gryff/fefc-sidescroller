@@ -11,7 +11,8 @@ export type LevelEntity =
   | PlatformEntity
   | BossEntity
   | WalkerEntity
-  | ObstacleEntity;
+  | ObstacleEntity
+  | PickupEntity;
 
 export interface PlatformEntity {
   type: "platform";
@@ -42,6 +43,16 @@ export interface ObstacleEntity {
   /** Signed offset from WORLD.groundY. Negative = above ground (e.g. on a platform). */
   y: number;
   damage: number;
+}
+
+export interface PickupEntity {
+  type: "pickup";
+  subtype: "coin" | "health";
+  x: number;
+  /** Signed offset from WORLD.groundY. Negative = above ground (e.g. on a platform). */
+  y: number;
+  /** Coins add this to the score; health restores this many points. */
+  value: number;
 }
 
 export interface WalkerEntity {

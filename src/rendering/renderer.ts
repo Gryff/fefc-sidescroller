@@ -130,6 +130,11 @@ export function render(
     drawSprite(ctx, id, cameraX);
   }
 
+  // Pickups (coins, health)
+  for (const id of entitiesWith("pickupTag", "sprite")) {
+    drawSprite(ctx, id, cameraX);
+  }
+
   // Projectiles
   for (const projId in projectile) {
     if (projectile[projId] && projectile[projId].active) {
@@ -173,6 +178,19 @@ export function render(
     }
     ctx.restore();
   }
+
+  // Score HUD — screen-space, top-left
+  ctx.save();
+  ctx.font = "bold 24px sans-serif";
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.lineWidth = 4;
+  ctx.strokeStyle = "#000000";
+  ctx.fillStyle = "#ffd84d";
+  const scoreText = `Score: ${state.score}`;
+  ctx.strokeText(scoreText, 16, 16);
+  ctx.fillText(scoreText, 16, 16);
+  ctx.restore();
 
   // Joystick UI
   if (isTouchDevice && assets.joystickImage.complete) {
